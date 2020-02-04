@@ -64,7 +64,7 @@ class NetworkStatusService(private val applicationContext: Context) {
     }
 
     fun cleanup() {
-        if (receiver != null) {
+        receiver?.let {
             applicationContext.unregisterReceiver(receiver)
         }
     }

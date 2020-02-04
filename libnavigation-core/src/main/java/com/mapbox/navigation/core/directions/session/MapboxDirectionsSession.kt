@@ -92,7 +92,7 @@ class MapboxDirectionsSession(
         routeObservers.remove(routeObserver)
     }
 
-    override fun unregisterAllRouteObservers() {
+    override fun unregisterRouteObservers() {
         routeObservers.clear()
     }
 

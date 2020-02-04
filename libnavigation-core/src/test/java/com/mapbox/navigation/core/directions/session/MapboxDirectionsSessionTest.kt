@@ -189,11 +189,11 @@ class MapboxDirectionsSessionTest {
     }
 
     @Test
-    fun unregisterAllRouteObservers() {
+    fun unregisterRouteObservers() {
         session.registerRouteObserver(observer)
         session.requestRoutes(routeOptions)
 
-        session.unregisterAllRouteObservers()
+        session.unregisterRouteObservers()
 
         callback.onResponse(routes)
         delayLambda()

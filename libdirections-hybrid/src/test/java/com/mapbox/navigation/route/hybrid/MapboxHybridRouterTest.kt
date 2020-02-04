@@ -179,8 +179,6 @@ class MapboxHybridRouterTest {
             networkStatusService.getNetworkStatusChannel().receive()
         } catch (ex: Exception) { }
 
-        every { context.unregisterReceiver(any()) } answers {}
-
         verify { context.unregisterReceiver(any()) }
     }
 

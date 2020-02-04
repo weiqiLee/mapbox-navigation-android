@@ -23,25 +23,25 @@ internal interface TripSession {
 
     fun registerLocationObserver(locationObserver: LocationObserver)
     fun unregisterLocationObserver(locationObserver: LocationObserver)
-    fun unregisterAllLocationObservers()
+    fun unregisterLocationObservers()
 
     fun registerRouteProgressObserver(routeProgressObserver: RouteProgressObserver)
     fun unregisterRouteProgressObserver(routeProgressObserver: RouteProgressObserver)
-    fun unregisterAllRouteProgressObservers()
+    fun unregisterRouteProgressObservers()
 
     fun registerOffRouteObserver(offRouteObserver: OffRouteObserver)
     fun unregisterOffRouteObserver(offRouteObserver: OffRouteObserver)
-    fun unregisterAllOffRouteObservers()
+    fun unregisterOffRouteObservers()
 
     fun registerStateObserver(stateObserver: TripSessionStateObserver)
     fun unregisterStateObserver(stateObserver: TripSessionStateObserver)
-    fun unregisterAllStateObservers()
+    fun unregisterStateObservers()
 
     fun registerBannerInstructionsObserver(bannerInstructionsObserver: BannerInstructionsObserver)
     fun unregisterBannerInstructionsObserver(bannerInstructionsObserver: BannerInstructionsObserver)
-    fun unregisterAllBannerInstructionsObservers()
+    fun unregisterBannerInstructionsObservers()
 
     fun registerVoiceInstructionsObserver(voiceInstructionsObserver: VoiceInstructionsObserver)
     fun unregisterVoiceInstructionsObserver(voiceInstructionsObserver: VoiceInstructionsObserver)
-    fun unregisterAllVoiceInstructionsObservers()
+    fun unregisterVoiceInstructionsObservers()
 }

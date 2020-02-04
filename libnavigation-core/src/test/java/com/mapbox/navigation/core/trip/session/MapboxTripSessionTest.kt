@@ -175,8 +175,8 @@ class MapboxTripSessionTest {
         mockkObject(ThreadController)
         every { ThreadController.getIOScopeAndRootJob() } returns JobControl(parentJob, testScope)
         every { ThreadController.getMainScopeAndRootJob() } returns JobControl(parentJob, testScope)
-        every { routeProgress.bannerInstructions() } returns null
-        every { routeProgress.voiceInstructions() } returns null
+        //every { routeProgress.bannerInstructions() } returns null
+        //every { routeProgress.voiceInstructions() } returns null
         tripSession = MapboxTripSession(
             tripService,
             locationEngine,
@@ -375,7 +375,7 @@ class MapboxTripSessionTest {
         tripSession.start()
         val observer: LocationObserver = mockk(relaxUnitFun = true)
         tripSession.registerLocationObserver(observer)
-        tripSession.unregisterAllLocationObservers()
+        tripSession.unregisterLocationObservers()
 
         locationCallbackSlot.captured.onSuccess(locationEngineResult)
 
@@ -411,7 +411,7 @@ class MapboxTripSessionTest {
         tripSession.registerLocationObserver(locationObserver)
         tripSession.registerRouteProgressObserver(routeProgressObserver)
 
-        tripSession.unregisterAllRouteProgressObservers()
+        tripSession.unregisterRouteProgressObservers()
 
         locationCallbackSlot.captured.onSuccess(locationEngineResult)
 
@@ -448,7 +448,7 @@ class MapboxTripSessionTest {
         tripSession.registerLocationObserver(locationObserver)
         tripSession.registerOffRouteObserver(offRouteObserver)
 
-        tripSession.unregisterAllOffRouteObservers()
+        tripSession.unregisterOffRouteObservers()
 
         locationCallbackSlot.captured.onSuccess(locationEngineResult)
 
@@ -471,7 +471,7 @@ class MapboxTripSessionTest {
 
         tripSession.start()
 
-        tripSession.unregisterAllStateObservers()
+        tripSession.unregisterStateObservers()
 
         // stop() would normally trigger a call to stateObserver.onSessionStopped()
         tripSession.stop()
@@ -510,7 +510,7 @@ class MapboxTripSessionTest {
         tripSession.stop()
 
         tripSession.start()
-        tripSession.unregisterAllBannerInstructionsObservers()
+        tripSession.unregisterBannerInstructionsObservers()
 
         locationCallbackSlot.captured.onSuccess(locationEngineResult)
 
@@ -550,7 +550,7 @@ class MapboxTripSessionTest {
         tripSession.stop()
 
         tripSession.start()
-        tripSession.unregisterAllVoiceInstructionsObservers()
+        tripSession.unregisterVoiceInstructionsObservers()
 
         locationCallbackSlot.captured.onSuccess(locationEngineResult)
 

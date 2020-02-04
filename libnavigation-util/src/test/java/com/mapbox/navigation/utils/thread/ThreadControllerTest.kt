@@ -3,13 +3,12 @@ package com.mapbox.navigation.utils.thread
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.CoreMatchers.`is`
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class ThreadControllerKtTest {
+class ThreadControllerTest {
 
     @Test
     fun monitorChannelWithException_callsOnCancellation_whenChannelClosed() {
@@ -53,6 +52,6 @@ class ThreadControllerKtTest {
             channel.close()
         }
 
-        assertThat(msg, `is`("success"))
+        assertEquals("success", msg)
     }
 }

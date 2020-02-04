@@ -142,7 +142,7 @@ class MapboxTripSession(
         locationObservers.remove(locationObserver)
     }
 
-    override fun unregisterAllLocationObservers() {
+    override fun unregisterLocationObservers() {
         locationObservers.clear()
     }
 
@@ -155,7 +155,7 @@ class MapboxTripSession(
         routeProgressObservers.remove(routeProgressObserver)
     }
 
-    override fun unregisterAllRouteProgressObservers() {
+    override fun unregisterRouteProgressObservers() {
         routeProgressObservers.clear()
     }
 
@@ -168,7 +168,7 @@ class MapboxTripSession(
         offRouteObservers.add(offRouteObserver)
     }
 
-    override fun unregisterAllOffRouteObservers() {
+    override fun unregisterOffRouteObservers() {
         offRouteObservers.clear()
     }
 
@@ -185,7 +185,7 @@ class MapboxTripSession(
         stateObservers.remove(stateObserver)
     }
 
-    override fun unregisterAllStateObservers() {
+    override fun unregisterStateObservers() {
         stateObservers.clear()
     }
 
@@ -198,7 +198,7 @@ class MapboxTripSession(
         }
     }
 
-    override fun unregisterAllBannerInstructionsObservers() {
+    override fun unregisterBannerInstructionsObservers() {
         bannerInstructionsObservers.clear()
     }
 
@@ -219,7 +219,7 @@ class MapboxTripSession(
         voiceInstructionsObservers.remove(voiceInstructionsObserver)
     }
 
-    override fun unregisterAllVoiceInstructionsObservers() {
+    override fun unregisterVoiceInstructionsObservers() {
         voiceInstructionsObservers.clear()
     }
 

@@ -18,7 +18,6 @@ class NetworkStatusServiceTest {
         val connectivityManager = mockk< ConnectivityManager>()
         val receiverIntent = mockk<Intent>()
         val receiverSlot = slot<BroadcastReceiver>()
-
         every { ctx.getSystemService(Context.CONNECTIVITY_SERVICE) } returns connectivityManager
         every { ctx.registerReceiver(capture(receiverSlot), any()) } returns receiverIntent
 

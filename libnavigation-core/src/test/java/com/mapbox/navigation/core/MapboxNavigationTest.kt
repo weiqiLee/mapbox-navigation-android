@@ -14,11 +14,11 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.verify
-import java.util.Locale
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
+import java.util.Locale
 
 class MapboxNavigationTest {
 
@@ -83,48 +83,48 @@ class MapboxNavigationTest {
     fun onDestroy_unregisters_DirectionSession_observers() {
         mapboxNavigation.onDestroy()
 
-        verify(exactly = 1) { directionsSession.unregisterAllRouteObservers() }
+        verify(exactly = 1) { directionsSession.unregisterRouteObservers() }
     }
 
     @Test
     fun onDestroy_unregisters_TripSession_location_observers() {
         mapboxNavigation.onDestroy()
 
-        verify(exactly = 1) { tripSession.unregisterAllLocationObservers() }
+        verify(exactly = 1) { tripSession.unregisterLocationObservers() }
     }
 
     @Test
     fun onDestroy_unregisters_TripSession_routeProgress_observers() {
         mapboxNavigation.onDestroy()
 
-        verify(exactly = 1) { tripSession.unregisterAllRouteProgressObservers() }
+        verify(exactly = 1) { tripSession.unregisterRouteProgressObservers() }
     }
 
     @Test
     fun onDestroy_unregisters_TripSession_offRoute_observers() {
         mapboxNavigation.onDestroy()
 
-        verify(exactly = 1) { tripSession.unregisterAllOffRouteObservers() }
+        verify(exactly = 1) { tripSession.unregisterOffRouteObservers() }
     }
 
     @Test
     fun onDestroy_unregisters_TripSession_state_observers() {
         mapboxNavigation.onDestroy()
 
-        verify(exactly = 1) { tripSession.unregisterAllStateObservers() }
+        verify(exactly = 1) { tripSession.unregisterStateObservers() }
     }
 
     @Test
     fun unregisterAllBannerInstructionsObservers() {
         mapboxNavigation.onDestroy()
 
-        verify(exactly = 1) { tripSession.unregisterAllBannerInstructionsObservers() }
+        verify(exactly = 1) { tripSession.unregisterBannerInstructionsObservers() }
     }
 
     @Test
     fun unregisterAllVoiceInstructionsObservers() {
         mapboxNavigation.onDestroy()
 
-        verify(exactly = 1) { tripSession.unregisterAllVoiceInstructionsObservers() }
+        verify(exactly = 1) { tripSession.unregisterVoiceInstructionsObservers() }
     }
 }
