@@ -1,7 +1,6 @@
 package com.mapbox.navigation.examples.core
 
 import android.annotation.SuppressLint
-import android.location.Location
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
@@ -10,7 +9,7 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatImageButton
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.mapbox.android.core.location.LocationEngine
+import com.google.android.material.snackbar.Snackbar
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.location.LocationEngineRequest
@@ -20,8 +19,6 @@ import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory
 import com.mapbox.mapboxsdk.geometry.LatLng
-import com.mapbox.mapboxsdk.location.LocationComponent
-import com.mapbox.mapboxsdk.location.LocationComponentActivationOptions
 import com.mapbox.mapboxsdk.location.OnCameraTrackingChangedListener
 import com.mapbox.mapboxsdk.location.modes.CameraMode
 import com.mapbox.mapboxsdk.location.modes.RenderMode
@@ -34,14 +31,12 @@ import com.mapbox.navigation.base.trip.model.RouteProgress
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.directions.session.RoutesRequestCallback
 import com.mapbox.navigation.core.replay.route.ReplayRouteLocationEngine
-import com.mapbox.navigation.core.trip.session.LocationObserver
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
 import com.mapbox.navigation.core.trip.session.TripSessionState
 import com.mapbox.navigation.core.trip.session.TripSessionStateObserver
 import com.mapbox.navigation.examples.R
 import com.mapbox.navigation.examples.utils.Utils
 import com.mapbox.navigation.examples.utils.extensions.toPoint
-import com.mapbox.navigation.ui.camera.DynamicCamera
 import com.mapbox.navigation.ui.camera.NavigationCamera
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import com.mapbox.navigation.ui.summary.SummaryBottomSheet
@@ -54,19 +49,14 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
     private val replayRouteLocationEngine by lazy { ReplayRouteLocationEngine() }
     private val routeOverviewPadding by lazy { buildRouteOverviewPadding() }
 
-    private lateinit var mapboxNavigation: MapboxNavigation
-    private lateinit var locationEngine: LocationEngine
-    private lateinit var navigationMapboxMap: NavigationMapboxMap
+    private var mapboxNavigation: MapboxNavigation? = null
+    private var navigationMapboxMap: NavigationMapboxMap? = null
     private lateinit var destination: LatLng
     private lateinit var summaryBehavior: BottomSheetBehavior<SummaryBottomSheet>
     private lateinit var routeOverviewButton: ImageButton
     private lateinit var cancelBtn: AppCompatImageButton
 
-    private var mapboxMap: MapboxMap? = null
-    private var locationComponent: LocationComponent? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        Timber.d("onCreate savedInstanceState=%s", savedInstanceState)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_summary_bottom_sheet)
         initViews()
@@ -74,14 +64,29 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
 
-        locationEngine = LocationEngineProvider.getBestLocationEngine(this)
-        initNavigation()
+        val mapboxNavigationOptions = MapboxNavigation.defaultNavigationOptions(
+                this,
+                Utils.getMapboxAccessToken(this)
+        )
+
+        mapboxNavigation = MapboxNavigation(
+                applicationContext,
+                Utils.getMapboxAccessToken(this),
+                mapboxNavigationOptions,
+                replayRouteLocationEngine
+        ).also {
+            it.registerRouteProgressObserver(routeProgressObserver)
+            it.registerTripSessionStateObserver(tripSessionStateObserver)
+        }
+
         initListeners()
     }
 
-    public override fun onResume() {
-        super.onResume()
-        mapView.onResume()
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
+        navigationMapboxMap?.onStart()
+        mapboxNavigation?.registerTripSessionStateObserver(tripSessionStateObserver)
     }
 
     public override fun onPause() {
@@ -89,19 +94,18 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         mapView.onPause()
     }
 
-    override fun onStart() {
-        super.onStart()
-        mapView.onStart()
-
-        mapboxNavigation.registerLocationObserver(locationObserver)
-        mapboxNavigation.registerTripSessionStateObserver(tripSessionStateObserver)
+    public override fun onResume() {
+        super.onResume()
+        mapView.onResume()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView.onStop()
-
+        mapboxNavigation?.unregisterTripSessionStateObserver(tripSessionStateObserver)
+        mapboxNavigation?.unregisterRouteProgressObserver(routeProgressObserver)
+        navigationMapboxMap?.onStop()
         stopLocationUpdates()
+        mapView.onStop()
     }
 
     override fun onLowMemory() {
@@ -111,14 +115,9 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onDestroy() {
         super.onDestroy()
+        mapboxNavigation?.stopTripSession()
+        mapboxNavigation?.onDestroy()
         mapView.onDestroy()
-
-        mapboxNavigation.unregisterLocationObserver(locationObserver)
-        mapboxNavigation.unregisterTripSessionStateObserver(tripSessionStateObserver)
-        mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
-
-        mapboxNavigation.stopTripSession()
-        mapboxNavigation.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -127,15 +126,18 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
-        Timber.d("onMapReady")
-        this.mapboxMap = mapboxMap
-        mapboxMap.moveCamera(CameraUpdateFactory.zoomTo(15.0))
+        mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+            mapboxMap.moveCamera(CameraUpdateFactory.zoomTo(15.0))
+            navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap)
+        }
+
+        LocationEngineProvider.getBestLocationEngine(this).getLastLocation(locationListenerCallback)
 
         mapboxMap.addOnMapLongClickListener { latLng ->
             Timber.d("onMapLongClickListener position=%s", latLng)
             destination = latLng
-            locationComponent?.lastKnownLocation?.let { originLocation ->
-                mapboxNavigation.requestRoutes(
+            mapboxMap.locationComponent.lastKnownLocation?.let { originLocation ->
+                mapboxNavigation?.requestRoutes(
                     RouteOptions.builder().applyDefaultParams()
                         .accessToken(Utils.getMapboxAccessToken(applicationContext))
                         .coordinates(originLocation.toPoint(), null, latLng.toPoint())
@@ -146,26 +148,6 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
                 )
             }
             true
-        }
-
-        mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
-            locationComponent = mapboxMap.locationComponent.apply {
-                activateLocationComponent(
-                    LocationComponentActivationOptions.builder(
-                        this@SummaryBottomSheetActivity,
-                        style
-                    )
-                        .build()
-                )
-                cameraMode = CameraMode.TRACKING
-                isLocationComponentEnabled = true
-            }
-
-            navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap).apply {
-                addOnCameraTrackingChangedListener(cameraTrackingChangedListener)
-                addProgressChangeListener(mapboxNavigation)
-                setCamera(DynamicCamera(mapboxMap))
-            }
         }
     }
 
@@ -197,65 +179,55 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun initNavigation() {
-        val accessToken = Utils.getMapboxAccessToken(this)
-        mapboxNavigation = MapboxNavigation(
-            applicationContext,
-            accessToken,
-            MapboxNavigation.defaultNavigationOptions(this, accessToken),
-            replayRouteLocationEngine
-        )
-    }
-
     @SuppressLint("MissingPermission")
     private fun initListeners() {
+        Snackbar.make(navigationLayout, R.string.msg_long_press_for_destination, Snackbar.LENGTH_LONG).show()
         startNavigation.setOnClickListener {
-            Timber.d("start navigation")
-            if (mapboxNavigation.getRoutes().isNotEmpty()) {
-                replayRouteLocationEngine.assign(mapboxNavigation.getRoutes()[0])
-
-                navigationMapboxMap.updateLocationLayerRenderMode(RenderMode.GPS)
-                navigationMapboxMap.updateCameraTrackingMode(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
-                navigationMapboxMap.startCamera(mapboxNavigation.getRoutes()[0])
-
-                mapboxNavigation.startTripSession()
+            navigationMapboxMap?.updateCameraTrackingMode(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
+            navigationMapboxMap?.updateLocationLayerRenderMode(RenderMode.GPS)
+            navigationMapboxMap?.addProgressChangeListener(mapboxNavigation!!)
+            if (mapboxNavigation?.getRoutes()?.isNotEmpty() == true) {
+                navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
+            mapboxNavigation?.startTripSession()
         }
 
         summaryBehavior.setBottomSheetCallback(bottomSheetCallback)
 
         routeOverviewButton.setOnClickListener {
-            navigationMapboxMap.showRouteOverview(routeOverviewPadding)
+            navigationMapboxMap?.showRouteOverview(routeOverviewPadding)
             recenterBtn.show()
         }
 
         recenterBtn.addOnClickListener {
             recenterBtn.hide()
-            navigationMapboxMap.resetPadding()
-            navigationMapboxMap.resetCameraPositionWith(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
+            navigationMapboxMap?.resetPadding()
+            navigationMapboxMap?.resetCameraPositionWith(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
         }
 
         cancelBtn.setOnClickListener {
-            mapboxNavigation.stopTripSession()
+            mapboxNavigation?.stopTripSession()
+            navigationMapboxMap?.updateCameraTrackingMode(NavigationCamera.NAVIGATION_TRACKING_MODE_NONE)
+            navigationMapboxMap?.updateLocationLayerRenderMode(RenderMode.NORMAL)
         }
     }
 
     private fun startLocationUpdates() {
         val requestLocationUpdateRequest =
-            LocationEngineRequest.Builder(1000L)
-                .setPriority(LocationEngineRequest.PRIORITY_NO_POWER)
-                .build()
+                LocationEngineRequest.Builder(InstructionViewActivity.DEFAULT_INTERVAL_IN_MILLISECONDS)
+                        .setPriority(LocationEngineRequest.PRIORITY_NO_POWER)
+                        .setMaxWaitTime(BasicNavigationActivity.DEFAULT_MAX_WAIT_TIME)
+                        .build()
 
-        locationEngine.requestLocationUpdates(
-            requestLocationUpdateRequest,
-            locationListenerCallback,
-            mainLooper
+        mapboxNavigation?.locationEngine?.requestLocationUpdates(
+                requestLocationUpdateRequest,
+                locationListenerCallback,
+                mainLooper
         )
-        locationEngine.getLastLocation(locationListenerCallback)
     }
 
     private fun stopLocationUpdates() {
-        locationEngine.removeLocationUpdates(locationListenerCallback)
+        mapboxNavigation?.locationEngine?.removeLocationUpdates(locationListenerCallback)
     }
 
     private fun buildRouteOverviewPadding(): IntArray {
@@ -285,7 +257,8 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         override fun onRoutesReady(routes: List<DirectionsRoute>) {
             Timber.d("route request success %s", routes.toString())
             if (routes.isNotEmpty()) {
-                navigationMapboxMap.drawRoute(routes[0])
+                navigationMapboxMap?.drawRoute(routes[0])
+                (mapboxNavigation?.locationEngine as ReplayRouteLocationEngine).assign(routes[0])
                 startNavigation.visibility = VISIBLE
                 startNavigation.isEnabled = true
             } else {
@@ -302,38 +275,16 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private val locationObserver = object : LocationObserver {
-        override fun onRawLocationChanged(rawLocation: Location) {
-            Timber.d("raw location %s", rawLocation.toString())
-        }
-
-        override fun onEnhancedLocationChanged(
-            enhancedLocation: Location,
-            keyPoints: List<Location>
-        ) {
-            if (keyPoints.isNotEmpty()) {
-                locationComponent?.forceLocationUpdate(keyPoints, true)
-            } else {
-                locationComponent?.forceLocationUpdate(enhancedLocation)
-            }
-        }
-    }
-
     private val tripSessionStateObserver = object : TripSessionStateObserver {
         override fun onSessionStateChanged(tripSessionState: TripSessionState) {
             when (tripSessionState) {
                 TripSessionState.STARTED -> {
                     updateViews(TripSessionState.STARTED)
-                    stopLocationUpdates()
-                    mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
                 }
                 TripSessionState.STOPPED -> {
-                    if (mapboxNavigation.getRoutes().isNotEmpty()) {
-                        navigationMapboxMap.removeRoute()
-                    }
                     updateViews(TripSessionState.STOPPED)
                     startLocationUpdates()
-                    mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
+                    navigationMapboxMap?.removeRoute()
                 }
             }
         }
@@ -354,7 +305,7 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         override fun onCameraTrackingDismissed() {
-            if (mapboxNavigation.getTripSessionState() == TripSessionState.STARTED) {
+            if (mapboxNavigation?.getTripSessionState() == TripSessionState.STARTED) {
                 summaryBehavior.isHideable = true
                 summaryBehavior.state = BottomSheetBehavior.STATE_HIDDEN
             }
@@ -380,10 +331,7 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         private val activityRef = WeakReference(activity)
 
         override fun onSuccess(result: LocationEngineResult) {
-            result.locations.firstOrNull()?.let { location ->
-                Timber.d("location engine callback -> onSuccess location:%s", location)
-                activityRef.get()?.locationComponent?.forceLocationUpdate(location)
-            }
+            activityRef.get()?.navigationMapboxMap?.updateLocation(result.lastLocation)
         }
 
         override fun onFailure(exception: Exception) {
