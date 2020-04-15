@@ -105,6 +105,13 @@ class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private val routeProgressObserver = object : RouteProgressObserver {
+        override fun onRouteProgressChanged(routeProgress: RouteProgress) {
+            // do something with the route progress
+            Timber.i("route progress: ${routeProgress.currentState()}")
+        }
+    }
+
     fun startLocationUpdates() {
         val requestLocationUpdateRequest =
             LocationEngineRequest.Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
@@ -213,13 +220,6 @@ class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun stopLocationUpdates() {
         mapboxNavigation?.locationEngine?.removeLocationUpdates(locationListenerCallback)
-    }
-
-    private val routeProgressObserver = object : RouteProgressObserver {
-        override fun onRouteProgressChanged(routeProgress: RouteProgress) {
-            // do something with the route progress
-            Timber.i("route progress: ${routeProgress.currentState()}")
-        }
     }
 
     private val tripSessionStateObserver = object : TripSessionStateObserver {
