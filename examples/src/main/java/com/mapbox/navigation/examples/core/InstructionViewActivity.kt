@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.location.Location
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -60,10 +61,14 @@ import com.mapbox.navigation.ui.utils.ViewUtils
 import com.mapbox.navigation.ui.voice.NavigationSpeechPlayer
 import com.mapbox.navigation.ui.voice.SpeechPlayerProvider
 import com.mapbox.navigation.ui.voice.VoiceInstructionLoader
+import kotlinx.android.synthetic.main.activity_basic_navigation_layout.*
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.Locale
 import kotlinx.android.synthetic.main.activity_instruction_view_layout.*
+import kotlinx.android.synthetic.main.activity_instruction_view_layout.container
+import kotlinx.android.synthetic.main.activity_instruction_view_layout.mapView
+import kotlinx.android.synthetic.main.activity_instruction_view_layout.startNavigation
 import okhttp3.Cache
 import timber.log.Timber
 
@@ -73,16 +78,12 @@ import timber.log.Timber
 class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
     FeedbackBottomSheetListener {
 
-    private val replayRouteLocationEngine by lazy { ReplayRouteLocationEngine() }
-
-    private lateinit var mapboxNavigation: MapboxNavigation
-    private lateinit var locationEngine: LocationEngine
-    private lateinit var navigationMapboxMap: NavigationMapboxMap
+    private var mapboxNavigation: MapboxNavigation? = null
+    private var navigationMapboxMap: NavigationMapboxMap? = null
     private lateinit var speechPlayer: NavigationSpeechPlayer
     private lateinit var destination: LatLng
 
     private var mapboxMap: MapboxMap? = null
-    private var locationComponent: LocationComponent? = null
     private var feedbackButton: NavigationButton? = null
     private var instructionSoundButton: NavigationButton? = null
     private var alertView: NavigationAlertView? = null
@@ -96,15 +97,32 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
 
-        locationEngine = LocationEngineProvider.getBestLocationEngine(this)
-        initNavigation()
+        val mapboxNavigationOptions = MapboxNavigation.defaultNavigationOptions(
+                this,
+                Utils.getMapboxAccessToken(this)
+        )
+
+        mapboxNavigation = MapboxNavigation(
+                applicationContext,
+                Utils.getMapboxAccessToken(this),
+                mapboxNavigationOptions,
+                locationEngine = getLocationEngine()
+        ).also {
+            it.registerRouteProgressObserver(routeProgressObserver)
+            it.registerTripSessionStateObserver(tripSessionStateObserver)
+        }
+
         initListeners()
         initializeSpeechPlayer()
     }
 
-    public override fun onResume() {
-        super.onResume()
-        mapView.onResume()
+    override fun onStart() {
+        super.onStart()
+        mapView.onStart()
+        navigationMapboxMap?.onStart()
+        mapboxNavigation?.registerTripSessionStateObserver(tripSessionStateObserver)
+        mapboxNavigation?.registerBannerInstructionsObserver(bannerInstructionObserver)
+        mapboxNavigation?.registerVoiceInstructionsObserver(voiceInstructionsObserver)
     }
 
     public override fun onPause() {
@@ -112,19 +130,20 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
         mapView.onPause()
     }
 
-    override fun onStart() {
-        super.onStart()
-        mapView.onStart()
-
-        mapboxNavigation.registerLocationObserver(locationObserver)
-        mapboxNavigation.registerTripSessionStateObserver(tripSessionStateObserver)
+    public override fun onResume() {
+        super.onResume()
+        mapView.onResume()
     }
 
     override fun onStop() {
         super.onStop()
-        mapView.onStop()
-
+        mapboxNavigation?.unregisterTripSessionStateObserver(tripSessionStateObserver)
+        mapboxNavigation?.unregisterRouteProgressObserver(routeProgressObserver)
+        mapboxNavigation?.unregisterBannerInstructionsObserver(bannerInstructionObserver)
+        mapboxNavigation?.unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
+        navigationMapboxMap?.onStop()
         stopLocationUpdates()
+        mapView.onStop()
     }
 
     override fun onLowMemory() {
@@ -134,18 +153,10 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
 
     override fun onDestroy() {
         super.onDestroy()
-        mapView.onDestroy()
-
-        mapboxNavigation.unregisterLocationObserver(locationObserver)
-        mapboxNavigation.unregisterTripSessionStateObserver(tripSessionStateObserver)
-        mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
-        mapboxNavigation.unregisterBannerInstructionsObserver(bannerInstructionObserver)
-        mapboxNavigation.unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
-
-        mapboxNavigation.stopTripSession()
-        mapboxNavigation.onDestroy()
-
+        mapboxNavigation?.stopTripSession()
+        mapboxNavigation?.onDestroy()
         speechPlayer.onDestroy()
+        mapView.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -154,15 +165,23 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     override fun onMapReady(mapboxMap: MapboxMap) {
-        Timber.d("onMapReady")
-        this.mapboxMap = mapboxMap
-        mapboxMap.moveCamera(CameraUpdateFactory.zoomTo(15.0))
+        mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
+            mapboxMap.moveCamera(CameraUpdateFactory.zoomTo(15.0))
+            navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap)
+
+            // center the map at current location
+            if (shouldSimulateRoute()) {
+                LocationEngineProvider.getBestLocationEngine(this).getLastLocation(locationListenerCallback)
+            } else {
+                mapboxNavigation?.locationEngine?.getLastLocation(locationListenerCallback)
+            }
+        }
 
         mapboxMap.addOnMapLongClickListener { latLng ->
             Timber.d("onMapLongClickListener position=%s", latLng)
             destination = latLng
-            locationComponent?.lastKnownLocation?.let { originLocation ->
-                mapboxNavigation.requestRoutes(
+            mapboxMap.locationComponent.lastKnownLocation?.let { originLocation ->
+                mapboxNavigation?.requestRoutes(
                     RouteOptions.builder().applyDefaultParams()
                         .accessToken(Utils.getMapboxAccessToken(applicationContext))
                         .coordinates(originLocation.toPoint(), null, latLng.toPoint())
@@ -173,22 +192,6 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
                 )
             }
             true
-        }
-
-        mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
-            locationComponent = mapboxMap.locationComponent.apply {
-                activateLocationComponent(
-                    LocationComponentActivationOptions.builder(this@InstructionViewActivity, style)
-                        .build()
-                )
-                cameraMode = CameraMode.TRACKING
-                isLocationComponentEnabled = true
-            }
-
-            navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap).also {
-                it.addProgressChangeListener(mapboxNavigation)
-                it.setCamera(DynamicCamera(mapboxMap))
-            }
         }
     }
 
@@ -211,40 +214,20 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
         // do nothing
     }
 
-    private fun initNavigation() {
-        val accessToken = Utils.getMapboxAccessToken(this)
-        mapboxNavigation = if (Utils.shouldSimulateRoute(applicationContext)) {
-            Timber.d("initNavigation simulate route")
-            MapboxNavigation(
-                applicationContext,
-                accessToken,
-                MapboxNavigation.defaultNavigationOptions(this, accessToken),
-                replayRouteLocationEngine
-            )
-        } else {
-            Timber.d("initNavigation location engine")
-            MapboxNavigation(
-                applicationContext,
-                accessToken,
-                MapboxNavigation.defaultNavigationOptions(this, accessToken)
-            )
-        }
-    }
-
     @SuppressLint("MissingPermission")
     private fun initListeners() {
+        Snackbar.make(container, R.string.msg_long_press_for_destination, Snackbar.LENGTH_LONG).show()
         startNavigation.setOnClickListener {
-            Timber.d("start navigation")
-            if (mapboxNavigation.getRoutes().isNotEmpty()) {
-                if (Utils.shouldSimulateRoute(applicationContext)) {
-                    replayRouteLocationEngine.assign(mapboxNavigation.getRoutes()[0])
-                }
-
-                navigationMapboxMap.updateLocationLayerRenderMode(RenderMode.GPS)
-                navigationMapboxMap.updateCameraTrackingMode(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
-                navigationMapboxMap.startCamera(mapboxNavigation.getRoutes()[0])
-
-                mapboxNavigation.startTripSession()
+            navigationMapboxMap?.updateCameraTrackingMode(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
+            navigationMapboxMap?.updateLocationLayerRenderMode(RenderMode.GPS)
+            navigationMapboxMap?.addProgressChangeListener(mapboxNavigation!!)
+            if (mapboxNavigation?.getRoutes()?.isNotEmpty() == true) {
+                navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
+            }
+            mapboxNavigation?.startTripSession()
+            startNavigation.visibility = View.GONE
+            if (!shouldSimulateRoute()) {
+                stopLocationUpdates()
             }
         }
     }
@@ -261,20 +244,20 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private fun startLocationUpdates() {
         val requestLocationUpdateRequest =
-            LocationEngineRequest.Builder(1000L)
+            LocationEngineRequest.Builder(DEFAULT_INTERVAL_IN_MILLISECONDS)
                 .setPriority(LocationEngineRequest.PRIORITY_NO_POWER)
+                .setMaxWaitTime(BasicNavigationActivity.DEFAULT_MAX_WAIT_TIME)
                 .build()
 
-        locationEngine.requestLocationUpdates(
+        mapboxNavigation?.locationEngine?.requestLocationUpdates(
             requestLocationUpdateRequest,
             locationListenerCallback,
             mainLooper
         )
-        locationEngine.getLastLocation(locationListenerCallback)
     }
 
     private fun stopLocationUpdates() {
-        locationEngine.removeLocationUpdates(locationListenerCallback)
+        mapboxNavigation?.locationEngine?.removeLocationUpdates(locationListenerCallback)
     }
 
     private fun showFeedbackBottomSheet() {
@@ -301,7 +284,6 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
         startNavigation.visibility = VISIBLE
         startNavigation.isEnabled = false
         instructionView.visibility = GONE
-        Snackbar.make(container, R.string.msg_long_press_for_destination, LENGTH_LONG).show()
         feedbackButton = instructionView.retrieveFeedbackButton().apply {
             hide()
             addOnClickListener {
@@ -341,12 +323,13 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    // Callbacks and Observers
     private val routesReqCallback = object : RoutesRequestCallback {
         override fun onRoutesReady(routes: List<DirectionsRoute>) {
-            Timber.d("route request success %s", routes.toString())
             if (routes.isNotEmpty()) {
-                navigationMapboxMap.drawRoute(routes[0])
+                navigationMapboxMap?.drawRoute(routes[0])
+                if (shouldSimulateRoute()) {
+                    (mapboxNavigation?.locationEngine as ReplayRouteLocationEngine).assign(routes[0])
+                }
                 startNavigation.visibility = VISIBLE
                 startNavigation.isEnabled = true
             } else {
@@ -365,42 +348,19 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
 
     private val locationListenerCallback = MyLocationEngineCallback(this)
 
-    private val locationObserver = object : LocationObserver {
-        override fun onRawLocationChanged(rawLocation: Location) {
-            Timber.d("raw location %s", rawLocation.toString())
-        }
-
-        override fun onEnhancedLocationChanged(
-            enhancedLocation: Location,
-            keyPoints: List<Location>
-        ) {
-            if (keyPoints.isNotEmpty()) {
-                locationComponent?.forceLocationUpdate(keyPoints, true)
-            } else {
-                locationComponent?.forceLocationUpdate(enhancedLocation)
-            }
-        }
-    }
-
     private val tripSessionStateObserver = object : TripSessionStateObserver {
         override fun onSessionStateChanged(tripSessionState: TripSessionState) {
             when (tripSessionState) {
                 TripSessionState.STARTED -> {
                     updateViews(TripSessionState.STARTED)
-                    stopLocationUpdates()
-                    mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
-                    mapboxNavigation.registerBannerInstructionsObserver(bannerInstructionObserver)
-                    mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver)
+                    if (!shouldSimulateRoute()) {
+                        stopLocationUpdates()
+                    }
                 }
                 TripSessionState.STOPPED -> {
                     updateViews(TripSessionState.STOPPED)
-                    if (::navigationMapboxMap.isInitialized) {
-                        navigationMapboxMap.removeRoute()
-                    }
                     startLocationUpdates()
-                    mapboxNavigation.unregisterBannerInstructionsObserver(bannerInstructionObserver)
-                    mapboxNavigation.unregisterVoiceInstructionsObserver(voiceInstructionsObserver)
-                    mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
+                    navigationMapboxMap?.removeRoute()
                 }
             }
         }
@@ -424,16 +384,30 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    // Used to determine if the ReplayRouteLocationEngine should be used to simulate the routing.
+    // This is used for testing purposes.
+    private fun shouldSimulateRoute(): Boolean {
+        return PreferenceManager.getDefaultSharedPreferences(this.applicationContext)
+                .getBoolean(this.getString(R.string.simulate_route_key), false)
+    }
+
+    // If shouldSimulateRoute is true a ReplayRouteLocationEngine will be used which is intended
+    // for testing else a real location engine is used.
+    private fun getLocationEngine(): LocationEngine {
+        return if (shouldSimulateRoute()) {
+            ReplayRouteLocationEngine()
+        } else {
+            LocationEngineProvider.getBestLocationEngine(this)
+        }
+    }
+
     private class MyLocationEngineCallback(activity: InstructionViewActivity) :
         LocationEngineCallback<LocationEngineResult> {
 
         private val activityRef = WeakReference(activity)
 
         override fun onSuccess(result: LocationEngineResult) {
-            result.locations.firstOrNull()?.let { location ->
-                Timber.d("location engine callback -> onSuccess location:%s", location)
-                activityRef.get()?.locationComponent?.forceLocationUpdate(location)
-            }
+            activityRef.get()?.navigationMapboxMap?.updateLocation(result.lastLocation)
         }
 
         override fun onFailure(exception: Exception) {
@@ -443,5 +417,6 @@ class InstructionViewActivity : AppCompatActivity(), OnMapReadyCallback,
 
     companion object {
         const val VOICE_INSTRUCTION_CACHE = "voice-instruction-cache"
+        const val DEFAULT_INTERVAL_IN_MILLISECONDS = 1000L
     }
 }

@@ -5,10 +5,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import com.mapbox.android.core.location.LocationEngine
-import com.mapbox.android.core.location.LocationEngineCallback
-import com.mapbox.android.core.location.LocationEngineRequest
-import com.mapbox.android.core.location.LocationEngineResult
+import com.mapbox.android.core.location.*
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -108,8 +105,9 @@ class ReplayActivity : AppCompatActivity(), OnMapReadyCallback {
             locationListenerCallback,
             mainLooper
         )
-        // center the map at current location
-        mapboxNavigation?.locationEngine?.getLastLocation(locationListenerCallback)
+        // Center the map at current location. Using LocationEngineProvider because the
+        // replay engine won't have your last location.
+        LocationEngineProvider.getBestLocationEngine(this).getLastLocation(locationListenerCallback)
     }
 
     private val routesReqCallback = object : RoutesRequestCallback {
@@ -144,7 +142,6 @@ class ReplayActivity : AppCompatActivity(), OnMapReadyCallback {
                 navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
             mapboxNavigation?.startTripSession()
-            stopLocationUpdates()
             startNavigation.visibility = View.GONE
         }
     }

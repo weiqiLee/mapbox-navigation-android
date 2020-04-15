@@ -87,7 +87,11 @@ class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
                 navigationMapboxMap?.restoreFrom(state)
             }
             // center the map at current location
-            mapboxNavigation?.locationEngine?.getLastLocation(locationListenerCallback)
+            if (shouldSimulateRoute()) {
+                LocationEngineProvider.getBestLocationEngine(this).getLastLocation(locationListenerCallback)
+            } else {
+                mapboxNavigation?.locationEngine?.getLastLocation(locationListenerCallback)
+            }
         }
         mapboxMap.addOnMapLongClickListener { latLng ->
             mapboxMap.locationComponent.lastKnownLocation?.let { originLocation ->
@@ -159,7 +163,6 @@ class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
                 navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
             mapboxNavigation?.startTripSession()
-            stopLocationUpdates()
             startNavigation.visibility = View.GONE
             if (!shouldSimulateRoute()) {
                 stopLocationUpdates()
@@ -226,7 +229,9 @@ class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
         override fun onSessionStateChanged(tripSessionState: TripSessionState) {
             when (tripSessionState) {
                 TripSessionState.STARTED -> {
-                    stopLocationUpdates()
+                    if (!shouldSimulateRoute()) {
+                        stopLocationUpdates()
+                    }
                 }
                 TripSessionState.STOPPED -> {
                     startLocationUpdates()
