@@ -45,13 +45,13 @@
     <string name="description_custom_camera_example" translatable="false">Shows how to use NavigationView with a custom camera tilt and zoom</string>
 
     <string name="title_custom_ui_component_style" translatable="false">Custom UI Component Style Example</string>
-    <string name="description_custom_ui_component_style" translatable="false">Shows how to use your own colors to style the UI SDK Components: InstructionView, SummaryBottomSheet ans so on</string>
+    <string name="description_custom_ui_component_style" translatable="false">Shows how to use your own colors to style the UI SDK Components: InstructionView, SummaryBottomSheet, and so on</string>
 
-    <string name="title_final_destination_building_highlight_kotlin" translatable="false">Final Destination Building Highlight UI Kotlin</string>
-    <string name="description_final_destination_building_highlight_kotlin" translatable="false">Show how the final destination building footprint can be highlighted when the device has arrived. Example\'s in Kotlin.</string>
+    <string name="title_final_destination_building_highlight_kotlin" translatable="false">Final Destination Building Highlight UI</string>
+    <string name="description_final_destination_building_highlight_kotlin" translatable="false">Show how the final destination building footprint can be highlighted when the device has arrived.</string>
 
-    <string name="title_arrival_ui_building_extrusions_kotlin" translatable="false">Arrival UI Building Extrusions Kotlin</string>
-    <string name="description_arrival_ui_building_extrusions_kotlin" translatable="false">Show building extrusions once the device is close enough to the final destination. Example\'s in Kotlin.</string>
+    <string name="title_ui_building_extrusions_kotlin" translatable="false">Building Extrusions</string>
+    <string name="description_ui_building_extrusions_kotlin" translatable="false">Use the Nav UI SDK\'s BuildingExtrusionLayer to show and customize building extrusions. Example\'s in Kotlin.</string>
 
     <string name="title_replay_navigation_kotlin" translatable="false">ReplayEngineActivity</string>
     <string name="description_replay_navigation_kotlin" translatable="false">Shows how to use the Mapbox Navigation with the replay engine in Kotlin code.</string>

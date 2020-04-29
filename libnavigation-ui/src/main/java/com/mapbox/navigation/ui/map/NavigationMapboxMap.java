@@ -32,8 +32,6 @@ import com.mapbox.navigation.core.MapboxNavigation;
 import com.mapbox.navigation.core.trip.session.LocationObserver;
 import com.mapbox.navigation.ui.NavigationSnapshotReadyCallback;
 import com.mapbox.navigation.ui.ThemeSwitcher;
-import com.mapbox.navigation.ui.arrival.BuildingExtrusionLayer;
-import com.mapbox.navigation.ui.arrival.DestinationBuildingFootprintLayer;
 import com.mapbox.navigation.ui.camera.Camera;
 import com.mapbox.navigation.ui.camera.NavigationCamera;
 import com.mapbox.navigation.ui.puck.NavigationPuckPresenter;
@@ -125,7 +123,7 @@ public class NavigationMapboxMap {
     initializeNavigationSymbolManager(mapView, mapboxMap);
     initializeMapLayerInteractor(mapboxMap);
     initializeRoute(mapView, mapboxMap, routeBelowLayerId);
-    initializeArrivalExperience(mapboxMap, mapView);
+    initializeBuildingRelatedLayers(mapboxMap);
     initializeCamera(mapboxMap);
     initializeLocationComponent();
   }
@@ -641,20 +639,28 @@ public class NavigationMapboxMap {
   }
 
   /**
-   * Updates the visibility of the building extrusion layer. Extrusions are added during the arrival experience.
+   * Updates the visibility of the building extrusion layer. Do be aware that this
+   * layer has a minimum zoom level ({@link BuildingExtrusionLayer#DEFAULT_MIN_ZOOM_LEVEL}
+   * by default). The buildings won't be visible even if you pass true through this method
+   * while the zoom level is below the layer's min zoom level. The lower the zoom level value,
+   * the farther away the camera is away from the map's surface. The layer has
+   * {@link BuildingExtrusionLayer#setMinZoomLevel(Float)} if you'd like to change this
+   * logic.
    *
-   * @param isVisible true if the building extrusions should be visible, false otherwise
+   * @param isVisible true if the building extrusions should be visible, false otherwise.
    */
   public void updateBuildingExtrusionVisibility(boolean isVisible) {
     buildingExtrusionLayer.updateVisibility(isVisible);
   }
 
   /**
-   * Updates the visibility of the destination building footprint highlight
-   * {@link com.mapbox.mapboxsdk.style.layers.FillLayer}. This layer is added during the arrival
-   * experience so that the final destination can be seen more easily.
+   * Updates the visibility of the building footprint highlight
+   * {@link com.mapbox.mapboxsdk.style.layers.FillLayer}. This layer is
+   * added or adjusted at any point during the navigation experience. It can be especially
+   * helpful to use to highlight the final destination builing so that the final destination
+   * can be seen more easily.
    *
-   * @param isVisible true if the building extrusions should be visible, false otherwise
+   * @param isVisible true if the building extrusions should be visible, false otherwise.
    */
   public void updateDestinationFootprintHighlightVisibility(boolean isVisible) {
     destinationBuildingFootprintLayer.updateVisibility(isVisible);
@@ -771,8 +777,8 @@ public class NavigationMapboxMap {
     locationFpsDelegate = new LocationFpsDelegate(map, locationComponent);
   }
 
-  private void initializeArrivalExperience(MapboxMap map, MapView mapView) {
-    buildingExtrusionLayer = new BuildingExtrusionLayer(map, mapView);
+  private void initializeBuildingRelatedLayers(MapboxMap map) {
+    buildingExtrusionLayer = new BuildingExtrusionLayer(map);
     destinationBuildingFootprintLayer = new DestinationBuildingFootprintLayer(map, mapView);
   }
 

@@ -1,8 +1,7 @@
-package com.mapbox.navigation.ui.arrival;
+package com.mapbox.navigation.ui.map;
 
 import android.graphics.Color;
 
-import com.mapbox.mapboxsdk.maps.MapView;
 import com.mapbox.mapboxsdk.maps.MapboxMap;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.FillExtrusionLayer;
@@ -24,36 +23,32 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionHei
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.fillExtrusionOpacity;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.visibility;
 
+/**
+ * This layer handles the creation and customization of a 3D building extrusion layer.
+ */
 public class BuildingExtrusionLayer {
 
   private static final String FILL_EXTRUSION_LAYER_ID = "extruded-buildings";
   private static final String BUILDING_LAYER_ID = "building";
-  private static final String HEIGHT = "height";
   private static final String MIN_HEIGHT = "min_height";
   private static final Float DEFAULT_FILL_EXTRUSION_OPACITY = 0.6f;
   private static final Integer DEFAULT_FILL_EXTRUSION_COLOR = Color.parseColor("#F9F9F9");
-  private static final Float DEFAULT_MIN_ZOOM_LEVEL = 15f;
+  private static final Float DEFAULT_MIN_ZOOM_LEVEL = 15.5f;
   private Float opacity;
   private Integer color;
-  private Float minZoomLevel;
   private Boolean layerVisible = false;
   private MapboxMap mapboxMap;
-  private MapView mapView;
 
-  public BuildingExtrusionLayer(MapboxMap mapboxMap, MapView mapView) {
+  public BuildingExtrusionLayer(MapboxMap mapboxMap) {
     this.mapboxMap = mapboxMap;
-    this.mapView = mapView;
   }
 
   /**
    * Toggles the visibility of the building extrusion layer.
    *
-   * @param visible true if the layer should be placed/displayed. False if it should be hidden.
+   * @param visible true if the layer should be added/displayed. False if it should be hidden.
    */
   public void updateVisibility(final Boolean visible) {
-    if (mapView.isDestroyed()) {
-      return;
-    }
     mapboxMap.getStyle(new Style.OnStyleLoaded() {
       @Override
       public void onStyleLoaded(@NonNull Style style) {
@@ -62,8 +57,8 @@ public class BuildingExtrusionLayer {
           addLayerToMap(visible);
         } else if (layer.getVisibility().value.equals(VISIBLE) != visible) {
           layer.setProperties(visibility(visible ? VISIBLE : NONE));
-          layerVisible = visible;
         }
+        layerVisible = visible;
       }
     });
   }
@@ -74,9 +69,6 @@ public class BuildingExtrusionLayer {
    * @return boolean about whether the extrusion layer is visible
    */
   public Boolean getVisibility() {
-    if (mapView.isDestroyed()) {
-      return false;
-    }
     mapboxMap.getStyle(new Style.OnStyleLoaded() {
       @Override
       public void onStyleLoaded(@NonNull Style style) {
@@ -143,7 +135,6 @@ public class BuildingExtrusionLayer {
         FillExtrusionLayer extrusionLayer = style.getLayerAs(FILL_EXTRUSION_LAYER_ID);
         if (extrusionLayer != null) {
           extrusionLayer.setMinZoom(newMinZoomLevel);
-          minZoomLevel = newMinZoomLevel;
         }
       }
     });
@@ -167,6 +158,11 @@ public class BuildingExtrusionLayer {
     return color;
   }
 
+  /**
+   * Adds the extrusion layer to the map
+   *
+   * @param visible whether the extrusion layer should be visible on the map
+   */
   private void addLayerToMap(final Boolean visible) {
     mapboxMap.getStyle(new Style.OnStyleLoaded() {
       @Override

@@ -1,4 +1,4 @@
-package com.mapbox.navigation.ui.arrival;
+package com.mapbox.navigation.ui.map;
 
 import android.graphics.Color;
 import android.graphics.PointF;
