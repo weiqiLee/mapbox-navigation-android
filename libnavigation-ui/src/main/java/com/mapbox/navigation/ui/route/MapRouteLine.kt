@@ -474,33 +474,24 @@ internal class MapRouteLine(
     }
 
     private fun drawRoutes(routeData: List<RouteFeatureData>) {
-        routeData.firstOrNull { it.route == primaryRoute }?.let {
+        val partitionedRoutes = routeData.partition { it.route == primaryRoute }
+
+        partitionedRoutes.first.firstOrNull()?.let {
             setPrimaryRoutesSource(it.featureCollection)
+            val lineString: LineString = getLineStringForRoute(it.route)
+            val expression = buildRouteLineExpression(
+                it.route,
+                lineString,
+                true,
+                0.0,
+                ::getRouteColorForCongestion)
+            style.getLayer(PRIMARY_ROUTE_LAYER_ID)?.setProperties(lineGradient(expression))
         }
 
-        routeData.filter { it.route != primaryRoute }.mapNotNull {
+        partitionedRoutes.second.mapNotNull {
             it.featureCollection.features()
         }.flatten().let {
             setAlternativeRoutesSource(FeatureCollection.fromFeatures(it))
-        }
-
-        primaryRoute?.let {
-            decorateRouteWithCongestionIndicators(it)
-        }
-    }
-
-    private fun decorateRouteWithCongestionIndicators(route: DirectionsRoute) {
-        ThreadController.getMainScopeAndRootJob().scope.launch {
-            val deferredExpression = async(Dispatchers.Default) {
-                val lineString: LineString = getLineStringForRoute(route)
-                buildRouteLineExpression(
-                    route,
-                    lineString,
-                    true,
-                    0.0,
-                    ::getRouteColorForCongestion)
-            }
-            style.getLayer(PRIMARY_ROUTE_LAYER_ID)?.setProperties(lineGradient(deferredExpression.await()))
         }
     }
 
