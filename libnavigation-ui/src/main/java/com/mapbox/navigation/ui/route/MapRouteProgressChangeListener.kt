@@ -64,28 +64,28 @@ internal class MapRouteProgressChangeListener(
             routeLine.draw(currentRoute)
             routeArrow.addUpcomingManeuverArrow(routeProgress)
         } else {
-            if (vanishRouteLineEnabled && (job == null || !job!!.isActive && currentRoute != null) && hasGeometry) {
-                job = ThreadController.getMainScopeAndRootJob().scope.launch {
+            if (vanishRouteLineEnabled && currentRoute != null && hasGeometry) {
+                //job = ThreadController.getMainScopeAndRootJob().scope.launch {
                     val totalDist =
                         (routeProgress.distanceRemaining() + routeProgress.distanceTraveled())
                     val dist = routeProgress.distanceTraveled() / totalDist
                     if (dist > 0) {
-                        val deferredExpression = async(Dispatchers.Default) {
-                            val lineString: LineString = routeLine.getLineStringForRoute(currentRoute!!)
-                            buildRouteLineExpression(
+                        //val deferredExpression = async(Dispatchers.Default) {
+                            val lineString: LineString = routeLine.getLineStringForRoute(currentRoute)
+                            val exp = buildRouteLineExpression(
                                 currentRoute,
                                 lineString,
                                 true,
                                 dist.toDouble(),
                                 routeLine::getRouteColorForCongestion
                             )
-                        }
+                        //}
                         routeArrow.addUpcomingManeuverArrow(routeProgress)
                         routeLine.hideShieldLineAtOffset(dist)
-                        routeLine.decorateRouteLine(deferredExpression.await())
+                        routeLine.decorateRouteLine(exp)
                     }
                 }
             }
-        }
+
     }
 }
