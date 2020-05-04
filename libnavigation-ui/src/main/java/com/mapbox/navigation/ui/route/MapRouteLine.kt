@@ -485,7 +485,10 @@ internal class MapRouteLine(
                 true,
                 0.0,
                 ::getRouteColorForCongestion)
-            style.getLayer(PRIMARY_ROUTE_LAYER_ID)?.setProperties(lineGradient(expression))
+
+            if (style.isFullyLoaded) {
+                style.getLayer(PRIMARY_ROUTE_LAYER_ID)?.setProperties(lineGradient(expression))
+            }
         }
 
         partitionedRoutes.second.mapNotNull {
