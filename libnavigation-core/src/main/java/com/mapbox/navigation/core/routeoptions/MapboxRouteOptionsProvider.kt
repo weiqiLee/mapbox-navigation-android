@@ -1,21 +1,47 @@
-package com.mapbox.navigation.core.directions.session
+package com.mapbox.navigation.core.routeoptions
 
 import android.location.Location
 import com.mapbox.api.directions.v5.models.RouteOptions
+import com.mapbox.base.common.logger.Logger
+import com.mapbox.base.common.logger.model.Message
+import com.mapbox.base.common.logger.model.Tag
 import com.mapbox.geojson.Point
 import com.mapbox.navigation.base.trip.model.RouteProgress
-import com.mapbox.navigation.core.trip.session.TripSession
 
-internal object AdjustedRouteOptionsProvider {
+/**
+ * Default implementation of [RouteOptionsProvider]
+ */
+internal class MapboxRouteOptionsProvider(
+    private val logger: Logger
+) : RouteOptionsProvider {
 
-    private const val DEFAULT_REROUTE_BEARING_TOLERANCE = 90.0
+    private companion object {
+        const val DEFAULT_REROUTE_BEARING_TOLERANCE = 90.0
+    }
 
-    fun getRouteOptions(directionsSession: DirectionsSession, tripSession: TripSession, location: Location): RouteOptions? {
-        val routeOptions: RouteOptions = directionsSession.getRouteOptions() ?: return null
-        val routeProgress: RouteProgress = tripSession.getRouteProgress() ?: return null
+    /**
+     * Provide a new instance *RouteOptions* based on initial *RouteOptions*, *RouteProgress* and
+     * current *Location*
+     *
+     * Return *null* in case if cannot combine a new [RouteOptions] instance base on input.
+     */
+    override fun newRouteOptions(
+        routeOptions: RouteOptions?,
+        routeProgress: RouteProgress?,
+        location: Location?
+    ): RouteOptions? {
+        if (routeOptions == null || routeProgress == null || location == null) {
+            logger.w(
+                Tag("MapboxRouteOptionsProvider"),
+                Message("Cannot combine RouteOptions, invalid inputs. *routeOptions*, " +
+                    "*routeProgress*, and *location* mustn't be null")
+            )
+            return null
+        }
 
         val optionsBuilder = routeOptions.toBuilder()
         val coordinates = routeOptions.coordinates()
+
         routeProgress.currentLegProgress?.legIndex?.let { index ->
             optionsBuilder
                 .coordinates(

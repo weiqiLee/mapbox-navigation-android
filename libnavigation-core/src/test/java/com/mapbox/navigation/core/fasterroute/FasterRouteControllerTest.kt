@@ -2,20 +2,17 @@ package com.mapbox.navigation.core.fasterroute
 
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.base.common.logger.Logger
-import com.mapbox.navigation.core.directions.session.AdjustedRouteOptionsProvider
 import com.mapbox.navigation.core.directions.session.DirectionsSession
 import com.mapbox.navigation.core.directions.session.RoutesRequestCallback
+import com.mapbox.navigation.core.routeoptions.RouteOptionsProvider
 import com.mapbox.navigation.core.trip.session.TripSession
 import com.mapbox.navigation.testing.MainCoroutineRule
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.slot
-import io.mockk.unmockkObject
 import io.mockk.verify
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -35,21 +32,16 @@ class FasterRouteControllerTest {
     private val routesRequestCallbacks = slot<RoutesRequestCallback>()
 
     private val logger: Logger = mockk()
-    private val fasterRouteController = FasterRouteController(directionsSession, tripSession, logger)
+    private val routeOptionsProvider: RouteOptionsProvider = mockk()
+    private val fasterRouteController = FasterRouteController(directionsSession, tripSession, routeOptionsProvider, logger)
 
     @Before
     fun setup() {
-        mockkObject(AdjustedRouteOptionsProvider)
-        every { AdjustedRouteOptionsProvider.getRouteOptions(any(), any(), any()) } returns mockk()
+        every { routeOptionsProvider.newRouteOptions(any(), any(), any()) } returns mockk()
 
         every { directionsSession.getRouteOptions() } returns mockk()
         every { directionsSession.requestFasterRoute(any(), capture(routesRequestCallbacks)) } returns mockk()
         every { tripSession.getRouteProgress() } returns mockk()
-    }
-
-    @After
-    fun teardown() {
-        unmockkObject(AdjustedRouteOptionsProvider)
     }
 
     @Test(expected = IllegalStateException::class)

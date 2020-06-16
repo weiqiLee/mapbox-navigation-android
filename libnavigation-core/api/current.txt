@@ -30,6 +30,7 @@ package com.mapbox.navigation.core {
     method public void requestRoutes(com.mapbox.api.directions.v5.models.RouteOptions routeOptions);
     method public String retrieveHistory();
     method public String? retrieveSsmlAnnouncementInstruction(int index);
+    method public void setRerouteController(com.mapbox.navigation.core.reroute.RerouteController rerouteController);
     method public void setRoutes(java.util.List<? extends com.mapbox.api.directions.v5.models.DirectionsRoute> routes);
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void startTripSession();
     method public void stopTripSession();
@@ -307,6 +308,29 @@ package com.mapbox.navigation.core.replay.route {
     method public com.mapbox.navigation.core.replay.route.ReplayRouteOptions.Builder minAcceleration(double minAcceleration);
     method public com.mapbox.navigation.core.replay.route.ReplayRouteOptions.Builder turnSpeedMps(double minSpeedMps);
     method public com.mapbox.navigation.core.replay.route.ReplayRouteOptions.Builder uTurnSpeedMps(double uTurnSpeedMps);
+  }
+
+}
+
+package com.mapbox.navigation.core.reroute {
+
+  public interface RerouteController {
+    method public com.mapbox.navigation.core.reroute.RerouteState getRerouteState();
+    method public void interruptReroute();
+    method public void reroute(com.mapbox.navigation.core.reroute.RerouteController.RoutesCallback routesCallback);
+    property public abstract com.mapbox.navigation.core.reroute.RerouteState rerouteState;
+  }
+
+  public static interface RerouteController.RoutesCallback {
+    method public void onNewRoutes(java.util.List<? extends com.mapbox.api.directions.v5.models.DirectionsRoute> routes);
+  }
+
+  public enum RerouteState {
+    enum_constant public static final com.mapbox.navigation.core.reroute.RerouteState FAILED;
+    enum_constant public static final com.mapbox.navigation.core.reroute.RerouteState FETCHING_ROUTE;
+    enum_constant public static final com.mapbox.navigation.core.reroute.RerouteState IDLE;
+    enum_constant public static final com.mapbox.navigation.core.reroute.RerouteState INTERRUPTED;
+    enum_constant public static final com.mapbox.navigation.core.reroute.RerouteState ROUTE_HAS_BEEN_FETCHED;
   }
 
 }
