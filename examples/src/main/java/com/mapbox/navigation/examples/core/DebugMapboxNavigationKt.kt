@@ -42,7 +42,6 @@ import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.directions.session.RoutesObserver
 import com.mapbox.navigation.core.directions.session.RoutesRequestCallback
 import com.mapbox.navigation.core.replay.MapboxReplayer
-import com.mapbox.navigation.core.replay.ReplayLocationEngine
 import com.mapbox.navigation.core.replay.route.ReplayProgressObserver
 import com.mapbox.navigation.core.telemetry.events.FeedbackEvent
 import com.mapbox.navigation.core.trip.session.RouteProgressObserver
@@ -234,7 +233,7 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
         startNavigation.setOnClickListener {
             updateCameraOnNavigationStateChange(true)
             mapboxNavigation.registerVoiceInstructionsObserver(this)
-            mapboxNavigation.startTripSession()
+            mapboxNavigation.startActiveGuidance()
             val routes = mapboxNavigation.getRoutes()
             if (routes.isNotEmpty()) {
                 initDynamicCamera(routes[0])
@@ -340,7 +339,7 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
 
         restartSessionEventChannel.poll()?.also {
             mapboxNavigation.registerVoiceInstructionsObserver(this)
-            mapboxNavigation.startTripSession()
+            mapboxNavigation.startActiveGuidance()
         }
 
         mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
@@ -362,7 +361,7 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
             // use this to kill the service and hide the notification when going into the background in the Free Drive state,
             // but also ensure to restart Free Drive when coming back from background by using the channel
             mapboxNavigation.unregisterVoiceInstructionsObserver(this)
-            mapboxNavigation.stopTripSession()
+            mapboxNavigation.stopActiveGuidance()
             restartSessionEventChannel.offer(RestartTripSessionAction)
         }
     }
@@ -378,7 +377,7 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
 
         mapboxReplayer.finish()
         mapboxNavigation.unregisterVoiceInstructionsObserver(this)
-        mapboxNavigation.stopTripSession()
+        mapboxNavigation.stopActiveGuidance()
         mapboxNavigation.onDestroy()
 
         restartSessionEventChannel.cancel()
@@ -426,18 +425,14 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
 
     private fun getMapboxNavigation(options: NavigationOptions): MapboxNavigation {
         return if (shouldSimulateRoute()) {
-            return MapboxNavigation(
-                navigationOptions = options,
-                locationEngine = ReplayLocationEngine(mapboxReplayer)
-            ).apply {
-                registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
-                mapboxReplayer.pushRealLocation(this@DebugMapboxNavigationKt, 0.0)
-                mapboxReplayer.play()
-            }
+            return MapboxNavigation(options)
+                .apply {
+                    registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
+                    mapboxReplayer.pushRealLocation(this@DebugMapboxNavigationKt, 0.0)
+                    mapboxReplayer.play()
+                }
         } else {
-            MapboxNavigation(
-                navigationOptions = options
-            )
+            MapboxNavigation(options)
         }
     }
 

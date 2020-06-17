@@ -31,7 +31,6 @@ import com.mapbox.navigation.core.arrival.ArrivalObserver
 import com.mapbox.navigation.core.arrival.ArrivalOptions
 import com.mapbox.navigation.core.directions.session.RoutesRequestCallback
 import com.mapbox.navigation.core.replay.MapboxReplayer
-import com.mapbox.navigation.core.replay.ReplayLocationEngine
 import com.mapbox.navigation.core.replay.route.ReplayProgressObserver
 import com.mapbox.navigation.core.replay.route.ReplayRouteMapper
 import com.mapbox.navigation.core.trip.session.TripSessionState
@@ -81,12 +80,10 @@ class ReplayWaypointsActivity : AppCompatActivity(), OnMapReadyCallback {
             .defaultNavigationOptionsBuilder(this, Utils.getMapboxAccessToken(this))
             .build()
 
-        mapboxNavigation = MapboxNavigation(
-            mapboxNavigationOptions,
-            locationEngine = ReplayLocationEngine(mapboxReplayer)
-        ).apply {
-            registerTripSessionStateObserver(tripSessionStateObserver)
-        }
+        mapboxNavigation = MapboxNavigation(mapboxNavigationOptions)
+            .apply {
+                registerTripSessionStateObserver(tripSessionStateObserver)
+            }
 
         initListeners()
         mapView.getMapAsync(this)
@@ -165,7 +162,7 @@ class ReplayWaypointsActivity : AppCompatActivity(), OnMapReadyCallback {
                 navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
             mapboxNavigation?.registerRouteProgressObserver(replayProgressObserver)
-            mapboxNavigation?.startTripSession()
+            mapboxNavigation?.startActiveGuidance()
             startNavigation.visibility = View.GONE
             mapboxReplayer.play()
         }
@@ -238,7 +235,7 @@ class ReplayWaypointsActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onDestroy()
         mapboxReplayer.finish()
         mapboxNavigation?.unregisterTripSessionStateObserver(tripSessionStateObserver)
-        mapboxNavigation?.stopTripSession()
+        mapboxNavigation?.stopActiveGuidance()
         mapboxNavigation?.onDestroy()
         mapView.onDestroy()
     }

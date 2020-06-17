@@ -2,7 +2,6 @@ package com.mapbox.navigation.core.trip.session
 
 import android.hardware.SensorEvent
 import android.location.Location
-import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineRequest
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.navigation.base.trip.model.RouteProgress
@@ -12,8 +11,6 @@ import com.mapbox.navigator.NavigationStatus
 internal interface TripSession {
 
     val tripService: TripService
-    val locationEngine: LocationEngine
-    val locationEngineRequest: LocationEngineRequest
     var route: DirectionsRoute?
 
     fun getRawLocation(): Location?
@@ -21,8 +18,11 @@ internal interface TripSession {
     fun getRouteProgress(): RouteProgress?
     fun getState(): TripSessionState
 
-    fun start()
-    fun stop()
+    fun startActiveGuidance()
+    fun stopActiveGuidance()
+    fun startFreeDrive()
+    fun stopFreeDrive()
+    fun refresh(locationEngineRequest: LocationEngineRequest)
 
     fun registerLocationObserver(locationObserver: LocationObserver)
     fun unregisterLocationObserver(locationObserver: LocationObserver)

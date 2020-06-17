@@ -10,8 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
-import com.mapbox.android.core.location.LocationEngineCallback
-import com.mapbox.android.core.location.LocationEngineResult
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -41,7 +39,6 @@ import com.mapbox.navigation.ui.feedback.FeedbackBottomSheetListener
 import com.mapbox.navigation.ui.feedback.FeedbackItem
 import com.mapbox.navigation.ui.internal.utils.ViewUtils
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
-import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_feedback_button.*
 
 /**
@@ -70,14 +67,13 @@ class FeedbackButtonActivity : AppCompatActivity(), OnMapReadyCallback,
 
         val mapboxNavigationOptions = MapboxNavigation
             .defaultNavigationOptionsBuilder(this, Utils.getMapboxAccessToken(this))
+            .locationEngine(ReplayLocationEngine())
             .build()
 
-        mapboxNavigation = MapboxNavigation(
-            mapboxNavigationOptions,
-            ReplayLocationEngine(mapboxReplayer)
-        ).apply {
-            registerTripSessionStateObserver(tripSessionStateObserver)
-        }
+        mapboxNavigation = MapboxNavigation(mapboxNavigationOptions)
+            .apply {
+                registerTripSessionStateObserver(tripSessionStateObserver)
+            }
 
         initListeners()
     }
@@ -111,7 +107,7 @@ class FeedbackButtonActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onDestroy()
         mapboxReplayer.finish()
         mapboxNavigation?.unregisterTripSessionStateObserver(tripSessionStateObserver)
-        mapboxNavigation?.stopTripSession()
+        mapboxNavigation?.stopActiveGuidance()
         mapboxNavigation?.onDestroy()
         mapView.onDestroy()
     }
@@ -143,7 +139,6 @@ class FeedbackButtonActivity : AppCompatActivity(), OnMapReadyCallback,
             mapboxNavigation?.registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
             mapboxReplayer.pushRealLocation(this, 0.0)
             mapboxReplayer.play()
-            mapboxNavigation?.locationEngine?.getLastLocation(locationListenerCallback)
 
             directionRoute?.let {
                 navigationMapboxMap?.drawRoute(it)
@@ -204,7 +199,7 @@ class FeedbackButtonActivity : AppCompatActivity(), OnMapReadyCallback,
             if (mapboxNavigation?.getRoutes()?.isNotEmpty() == true) {
                 navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
-            mapboxNavigation?.startTripSession()
+            mapboxNavigation?.startActiveGuidance()
             feedbackButton.show()
         }
 
@@ -252,21 +247,6 @@ class FeedbackButtonActivity : AppCompatActivity(), OnMapReadyCallback,
                     updateCameraOnNavigationStateChange(false)
                 }
             }
-        }
-    }
-
-    private val locationListenerCallback = MyLocationEngineCallback(this)
-
-    private class MyLocationEngineCallback(activity: FeedbackButtonActivity) :
-        LocationEngineCallback<LocationEngineResult> {
-
-        private val activityRef = WeakReference(activity)
-
-        override fun onSuccess(result: LocationEngineResult) {
-            activityRef.get()?.navigationMapboxMap?.updateLocation(result.lastLocation)
-        }
-
-        override fun onFailure(exception: Exception) {
         }
     }
 

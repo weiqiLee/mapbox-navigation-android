@@ -13,9 +13,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import com.mapbox.android.core.location.LocationEngine
-import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineProvider
-import com.mapbox.android.core.location.LocationEngineResult
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.DirectionsRoute
 import com.mapbox.api.directions.v5.models.RouteOptions
@@ -44,7 +42,6 @@ import com.mapbox.navigation.examples.utils.extensions.toPoint
 import com.mapbox.navigation.ui.camera.NavigationCamera
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import com.mapbox.navigation.ui.summary.SummaryBottomSheet
-import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_summary_bottom_sheet.*
 
 /**
@@ -75,15 +72,14 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapboxNavigationOptions = MapboxNavigation
             .defaultNavigationOptionsBuilder(this, Utils.getMapboxAccessToken(this))
+            .locationEngine(getLocationEngine())
             .build()
 
-        mapboxNavigation = MapboxNavigation(
-            mapboxNavigationOptions,
-            getLocationEngine()
-        ).apply {
-            registerTripSessionStateObserver(tripSessionStateObserver)
-            registerRouteProgressObserver(routeProgressObserver)
-        }
+        mapboxNavigation = MapboxNavigation(mapboxNavigationOptions)
+            .apply {
+                registerTripSessionStateObserver(tripSessionStateObserver)
+                registerRouteProgressObserver(routeProgressObserver)
+            }
 
         initListeners()
     }
@@ -118,7 +114,7 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         mapboxReplayer.finish()
         mapboxNavigation?.unregisterTripSessionStateObserver(tripSessionStateObserver)
         mapboxNavigation?.unregisterRouteProgressObserver(routeProgressObserver)
-        mapboxNavigation?.stopTripSession()
+        mapboxNavigation?.stopActiveGuidance()
         mapboxNavigation?.onDestroy()
         mapView.onDestroy()
     }
@@ -152,7 +148,6 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
                         mapboxReplayer.pushRealLocation(this, 0.0)
                         mapboxReplayer.play()
                     }
-                    mapboxNavigation?.locationEngine?.getLastLocation(locationListenerCallback)
                     Snackbar.make(mapView, R.string.msg_long_press_map_to_place_waypoint, LENGTH_SHORT)
                         .show()
                 }
@@ -180,7 +175,7 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
     // for testing else a real location engine is used.
     private fun getLocationEngine(): LocationEngine {
         return if (shouldSimulateRoute()) {
-            ReplayLocationEngine(mapboxReplayer)
+            ReplayLocationEngine()
         } else {
             LocationEngineProvider.getBestLocationEngine(this)
         }
@@ -224,7 +219,7 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
             if (mapboxNavigation?.getRoutes()?.isNotEmpty() == true) {
                 navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
-            mapboxNavigation?.startTripSession()
+            mapboxNavigation?.startActiveGuidance()
         }
 
         summaryBehavior.setBottomSheetCallback(bottomSheetCallback)
@@ -241,7 +236,7 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         cancelBtn.setOnClickListener {
-            mapboxNavigation?.stopTripSession()
+            mapboxNavigation?.stopActiveGuidance()
             updateCameraOnNavigationStateChange(false)
         }
     }
@@ -350,21 +345,6 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private val locationListenerCallback = MyLocationEngineCallback(this)
-
-    private class MyLocationEngineCallback(activity: SummaryBottomSheetActivity) :
-        LocationEngineCallback<LocationEngineResult> {
-
-        private val activityRef = WeakReference(activity)
-
-        override fun onSuccess(result: LocationEngineResult) {
-            activityRef.get()?.navigationMapboxMap?.updateLocation(result.lastLocation)
-        }
-
-        override fun onFailure(exception: Exception) {
-        }
-    }
-
     private fun shouldSimulateRoute(): Boolean {
         return PreferenceManager.getDefaultSharedPreferences(this.applicationContext)
             .getBoolean(this.getString(R.string.simulate_route_key), false)
@@ -377,7 +357,7 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
             navigationMapboxMap?.addProgressChangeListener(mapboxNavigation!!)
             navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             updateCameraOnNavigationStateChange(true)
-            mapboxNavigation?.startTripSession()
+            mapboxNavigation?.startActiveGuidance()
         }
     }
 }

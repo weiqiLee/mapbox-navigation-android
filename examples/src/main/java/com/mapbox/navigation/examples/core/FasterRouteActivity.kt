@@ -11,7 +11,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
 import com.mapbox.android.core.location.LocationEngineCallback
-import com.mapbox.android.core.location.LocationEngineRequest
 import com.mapbox.android.core.location.LocationEngineResult
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.api.directions.v5.models.DirectionsRoute
@@ -101,12 +100,10 @@ class FasterRouteActivity : AppCompatActivity(), OnMapReadyCallback {
             when (tripSessionState) {
                 TripSessionState.STARTED -> {
                     startNavigation.visibility = GONE
-                    stopLocationUpdates()
                     mapboxNavigation.attachFasterRouteObserver(fasterRouteObserver)
                     mapboxNavigation.registerRouteProgressObserver(routeProgressObserver)
                 }
                 TripSessionState.STOPPED -> {
-                    startLocationUpdates()
                     mapboxNavigation.detachFasterRouteObserver()
                     mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
                     navigationMapboxMap?.removeRoute()
@@ -195,7 +192,7 @@ class FasterRouteActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onDestroy()
         mapboxNavigation.unregisterRouteProgressObserver(routeProgressObserver)
         mapboxNavigation.unregisterRoutesObserver(routesObserver)
-        mapboxNavigation.stopTripSession()
+        mapboxNavigation.stopActiveGuidance()
         mapboxNavigation.onDestroy()
         mapView.onDestroy()
     }
@@ -249,9 +246,8 @@ class FasterRouteActivity : AppCompatActivity(), OnMapReadyCallback {
             if (mapboxNavigation.getRoutes().isNotEmpty()) {
                 navigationMapboxMap?.startCamera(mapboxNavigation.getRoutes()[0])
             }
-            mapboxNavigation.startTripSession()
+            mapboxNavigation.startActiveGuidance()
             navigationMapboxMap?.showAlternativeRoutes(false)
-            stopLocationUpdates()
         }
         dismissLayout.setOnClickListener {
             fasterRouteSelectionTimer.onFinish()
@@ -261,29 +257,6 @@ class FasterRouteActivity : AppCompatActivity(), OnMapReadyCallback {
                 mapboxNavigation.setRoutes(newRoutes)
             }
             fasterRouteSelectionTimer.onFinish()
-        }
-    }
-
-    private fun stopLocationUpdates() {
-        mapboxNavigation.locationEngine.removeLocationUpdates(locationListenerCallback)
-    }
-
-    @SuppressLint("RestrictedApi")
-    private fun startLocationUpdates() {
-        val requestLocationUpdateRequest =
-            LocationEngineRequest.Builder(DEFAULT_ENGINE_REQUEST_INTERVAL)
-                .setFastestInterval(DEFAULT_FASTEST_INTERVAL)
-                .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-                .build()
-        try {
-            mapboxNavigation.locationEngine.requestLocationUpdates(
-                requestLocationUpdateRequest,
-                locationListenerCallback,
-                mainLooper
-            )
-            mapboxNavigation.locationEngine.getLastLocation(locationListenerCallback)
-        } catch (exception: SecurityException) {
-            Timber.e(exception)
         }
     }
 
@@ -341,7 +314,7 @@ class FasterRouteActivity : AppCompatActivity(), OnMapReadyCallback {
             navigationMapboxMap?.addProgressChangeListener(mapboxNavigation!!)
             navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             updateCameraOnNavigationStateChange(true)
-            mapboxNavigation?.startTripSession()
+            mapboxNavigation?.startActiveGuidance()
         }
     }
 }

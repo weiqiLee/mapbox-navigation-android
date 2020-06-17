@@ -6,7 +6,6 @@ import android.content.Context
 import android.hardware.SensorEvent
 import androidx.annotation.RequiresPermission
 import com.mapbox.android.core.location.LocationEngine
-import com.mapbox.android.core.location.LocationEngineProvider
 import com.mapbox.android.core.location.LocationEngineRequest
 import com.mapbox.annotation.module.MapboxModuleType
 import com.mapbox.api.directions.v5.models.DirectionsRoute
@@ -41,6 +40,8 @@ import com.mapbox.navigation.core.fasterroute.FasterRouteObserver
 import com.mapbox.navigation.core.internal.MapboxDistanceFormatter
 import com.mapbox.navigation.core.internal.accounts.MapboxNavigationAccounts
 import com.mapbox.navigation.core.internal.trip.service.TripService
+import com.mapbox.navigation.core.replay.MapboxReplayer
+import com.mapbox.navigation.core.replay.ReplayLocationEngine
 import com.mapbox.navigation.core.routerefresh.RouteRefreshController
 import com.mapbox.navigation.core.telemetry.MapboxNavigationTelemetry
 import com.mapbox.navigation.core.telemetry.events.FeedbackEvent
@@ -93,7 +94,7 @@ private const val MAPBOX_NAVIGATION_TOKEN_EXCEPTION = "You need to provide an ac
  * The SDK starts of in an `Idle` state.
  *
  * ### Location
- * Whenever the [startTripSession] is called, the SDK will enter the `Free Drive` state starting to request and propagate location updates via the [LocationObserver].
+ * Whenever the [startActiveGuidance] is called, the SDK will enter the `Free Drive` state starting to request and propagate location updates via the [LocationObserver].
  *
  * This observer provides 2 location update values in mixed intervals - either the raw one received from the provided [LocationEngine]
  * or the enhanced one map-matched internally using SDK's native capabilities.
@@ -120,17 +121,10 @@ private const val MAPBOX_NAVIGATION_TOKEN_EXCEPTION = "You need to provide an ac
  *
  * @param navigationOptions a set of [NavigationOptions] used to customize various features of the SDK.
  * Use [defaultNavigationOptionsBuilder] to set default options
- * @param locationEngine used to listen for raw location updates
- * @param locationEngineRequest used to request raw location updates
  */
 class MapboxNavigation
-@JvmOverloads
 constructor(
-    private val navigationOptions: NavigationOptions,
-    val locationEngine: LocationEngine = LocationEngineProvider.getBestLocationEngine(navigationOptions.applicationContext),
-    locationEngineRequest: LocationEngineRequest = LocationEngineRequest.Builder(1000L)
-        .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-        .build()
+    val navigationOptions: NavigationOptions
 ) {
 
     private val accessToken: String? = navigationOptions.accessToken
@@ -152,6 +146,12 @@ constructor(
     private val MAPBOX_NAVIGATION_NOTIFICATION_PACKAGE_NAME =
         "com.mapbox.navigation.trip.notification.MapboxTripNotification"
     private val MAPBOX_NOTIFICATION_ACTION_CHANNEL = "notificationActionButtonChannel"
+
+    /**
+     * Available when [NavigationOptions.locationEngine] is the [ReplayLocationEngine]
+     */
+    var mapboxReplayer: MapboxReplayer = MapboxReplayer()
+        private set
 
     init {
         ThreadController.init()
@@ -178,8 +178,7 @@ constructor(
         )
         tripSession = NavigationComponentProvider.createTripSession(
             tripService,
-            locationEngine,
-            locationEngineRequest,
+            navigationOptions.locationEngine,
             navigationOptions.navigatorPredictionMillis,
             navigator = navigator,
             logger = logger
@@ -202,7 +201,7 @@ constructor(
                 navigationOptions.applicationContext,
                 this,
                 MapboxMetricsReporter,
-                locationEngine.javaClass.name,
+                navigationOptions.locationEngine.javaClass.name,
                 ThreadController.getMainScopeAndRootJob(),
                 navigationOptions,
                 obtainUserAgent(navigationOptions.isFromNavigationUi)
@@ -215,18 +214,26 @@ constructor(
 
         arrivalProgressObserver = ArrivalProgressObserver(tripSession)
         attachArrivalController()
+
+        when (val locationEngine = navigationOptions.locationEngine) {
+            is ReplayLocationEngine -> {
+                this.mapboxReplayer = MapboxReplayer().apply {
+                    registerObserver(locationEngine)
+                }
+            }
+        }
     }
 
     /**
-     * Starts listening for location updates and enters an `Active Guidance` state if there's a primary route available
-     * or a `Free Drive` state otherwise.
+     * Starts listening for location updates and enters an `Active Guidance` state if
+     * there's a primary route available, otherwise falls back to `Free Drive`.
      *
      * @see [registerTripSessionStateObserver]
      * @see [registerRouteProgressObserver]
      */
     @RequiresPermission(anyOf = [ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION])
-    fun startTripSession() {
-        tripSession.start()
+    fun startActiveGuidance() {
+        tripSession.startActiveGuidance()
         notificationChannelField?.let {
             monitorNotificationActionButton(it.get(null) as ReceiveChannel<NotificationAction>)
         }
@@ -237,8 +244,32 @@ constructor(
      *
      * @see [registerTripSessionStateObserver]
      */
-    fun stopTripSession() {
-        tripSession.stop()
+    fun stopActiveGuidance() {
+        tripSession.stopActiveGuidance()
+    }
+
+    /**
+     * Start receiving map matched locations without a route.
+     */
+    @RequiresPermission(anyOf = [ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION])
+    fun startFreeDrive() {
+        tripSession.startFreeDrive()
+    }
+
+    /**
+     * Stop receiving map matched locations.
+     */
+    fun stopFreeDrive() {
+        tripSession.stopFreeDrive()
+    }
+
+    /**
+     * Refresh the location request used for [startActiveGuidance] or [startFreeDrive]
+     *
+     * @param locationEngineRequest the new location engine request
+     */
+    fun refreshLocationRequest(locationEngineRequest: LocationEngineRequest) {
+        tripSession.refresh(locationEngineRequest)
     }
 
     /**
@@ -310,7 +341,8 @@ constructor(
         MapboxNavigationTelemetry.unregisterListeners(this@MapboxNavigation)
         directionsSession.shutdown()
         directionsSession.unregisterAllRoutesObservers()
-        tripSession.stop()
+        tripSession.stopActiveGuidance()
+        tripSession.stopFreeDrive()
         tripSession.unregisterAllLocationObservers()
         tripSession.unregisterAllRouteProgressObservers()
         tripSession.unregisterAllOffRouteObservers()
@@ -363,7 +395,7 @@ constructor(
     /**
      * Registers [LocationObserver]. The updates are available whenever the trip session is started.
      *
-     * @see [startTripSession]
+     * @see [startActiveGuidance]
      */
     fun registerLocationObserver(locationObserver: LocationObserver) {
         tripSession.registerLocationObserver(locationObserver)
@@ -379,7 +411,7 @@ constructor(
     /**
      * Registers [RouteProgressObserver]. The updates are available whenever the trip session is started and a primary route is available.
      *
-     * @see [startTripSession]
+     * @see [startActiveGuidance]
      * @see [requestRoutes] // TODO add route setter
      */
     fun registerRouteProgressObserver(routeProgressObserver: RouteProgressObserver) {
@@ -456,8 +488,8 @@ constructor(
     /**
      * Registers [TripSessionStateObserver]. Monitors the trip session's state.
      *
-     * @see [startTripSession]
-     * @see [stopTripSession]
+     * @see [startActiveGuidance]
+     * @see [stopActiveGuidance]
      */
     fun registerTripSessionStateObserver(tripSessionStateObserver: TripSessionStateObserver) {
         tripSession.registerStateObserver(tripSessionStateObserver)
@@ -594,7 +626,7 @@ constructor(
     private fun monitorNotificationActionButton(channel: ReceiveChannel<NotificationAction>) {
         mainJobController.scope.monitorChannelWithException(channel, { notificationAction ->
             when (notificationAction) {
-                NotificationAction.END_NAVIGATION -> tripSession.stop()
+                NotificationAction.END_NAVIGATION -> tripSession.stopActiveGuidance()
             }
         })
     }

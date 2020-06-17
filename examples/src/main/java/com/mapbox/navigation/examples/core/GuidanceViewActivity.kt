@@ -62,17 +62,16 @@ class GuidanceViewActivity : AppCompatActivity(), OnMapReadyCallback {
         mapView.onCreate(savedInstanceState)
         mapView.getMapAsync(this)
 
-        val mapboxNavigationOptions = MapboxNavigation
+        val options = MapboxNavigation
             .defaultNavigationOptionsBuilder(this, Utils.getMapboxAccessToken(this))
+            .locationEngine(ReplayLocationEngine())
             .build()
 
-        mapboxNavigation = MapboxNavigation(
-                mapboxNavigationOptions,
-                locationEngine = ReplayLocationEngine(mapboxReplayer)
-        ).also {
-            it.registerRouteProgressObserver(routeProgressObserver)
-            it.registerBannerInstructionsObserver(bannerInstructionObserver)
-        }
+        mapboxNavigation = MapboxNavigation(options)
+            .apply {
+                registerRouteProgressObserver(routeProgressObserver)
+                registerBannerInstructionsObserver(bannerInstructionObserver)
+            }
 
         initListeners()
     }
@@ -157,7 +156,7 @@ class GuidanceViewActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun initListeners() {
         startNavigation.setOnClickListener {
             updateCameraOnNavigationStateChange(true)
-            mapboxNavigation.startTripSession()
+            mapboxNavigation.startActiveGuidance()
             mapboxNavigation.getRoutes().let { routes ->
                 if (routes.isNotEmpty()) {
                     navigationMapboxMap?.startCamera(routes[0])
@@ -203,7 +202,7 @@ class GuidanceViewActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onDestroy() {
         super.onDestroy()
         mapboxReplayer.finish()
-        mapboxNavigation.stopTripSession()
+        mapboxNavigation.stopActiveGuidance()
         mapboxNavigation.onDestroy()
         mapView.onDestroy()
     }

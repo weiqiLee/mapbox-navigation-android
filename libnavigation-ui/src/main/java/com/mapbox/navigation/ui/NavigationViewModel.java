@@ -211,14 +211,14 @@ public class NavigationViewModel extends AndroidViewModel {
     initializeTimeFormat(updatedOptions);
     if (!isRunning()) {
       LocationEngine locationEngine = initializeLocationEngineFrom(options);
-      initializeNavigation(updatedOptions, locationEngine);
+      initializeNavigation(updatedOptions);
       initializeVoiceInstructionLoader();
       initializeVoiceInstructionCache();
       initializeNavigationSpeechPlayer(options);
       initializeMapOfflineManager(options);
     }
     navigation.setRoutes(Arrays.asList(options.directionsRoute()));
-    navigation.startTripSession();
+    navigation.startActiveGuidance();
     voiceInstructionCache.initCache(options.directionsRoute());
   }
 
@@ -254,7 +254,7 @@ public class NavigationViewModel extends AndroidViewModel {
     navigation.unregisterBannerInstructionsObserver(bannerInstructionsObserver);
     navigation.unregisterVoiceInstructionsObserver(voiceInstructionsObserver);
     navigation.unregisterTripSessionStateObserver(tripSessionStateObserver);
-    navigation.stopTripSession();
+    navigation.stopActiveGuidance();
   }
 
   void updateRouteProgress(RouteProgress routeProgress) {
@@ -402,9 +402,10 @@ public class NavigationViewModel extends AndroidViewModel {
     if (options.locationEngine() != null) {
       return options.locationEngine();
     } else if (options.shouldSimulateRoute()) {
-      ReplayLocationEngine replayLocationEngine = new ReplayLocationEngine(mapboxReplayer);
+      ReplayLocationEngine replayLocationEngine = new ReplayLocationEngine();
       final Point lastLocation = getOriginOfRoute(options.directionsRoute());
       ReplayEventBase replayEventOrigin = ReplayRouteMapper.mapToUpdateLocation(0.0, lastLocation);
+      mapboxReplayer.registerObserver(replayLocationEngine);
       mapboxReplayer.pushEvents(Collections.singletonList(replayEventOrigin));
       mapboxReplayer.play();
       return replayLocationEngine;
@@ -413,14 +414,8 @@ public class NavigationViewModel extends AndroidViewModel {
     }
   }
 
-  private void initializeNavigation(
-          NavigationOptions options,
-          @Nullable LocationEngine locationEngine) {
-    if (locationEngine == null) {
-      navigation = new MapboxNavigation(options);
-    } else {
-      navigation = new MapboxNavigation(options, locationEngine);
-    }
+  private void initializeNavigation(NavigationOptions options) {
+    navigation = new MapboxNavigation(options);
     addNavigationListeners();
   }
 

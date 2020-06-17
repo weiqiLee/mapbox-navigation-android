@@ -60,14 +60,13 @@ class ReplayActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapboxNavigationOptions = MapboxNavigation
             .defaultNavigationOptionsBuilder(this, Utils.getMapboxAccessToken(this))
+            .locationEngine(ReplayLocationEngine())
             .build()
 
-        mapboxNavigation = MapboxNavigation(
-            mapboxNavigationOptions,
-            locationEngine = ReplayLocationEngine(mapboxReplayer)
-        ).apply {
-            registerTripSessionStateObserver(tripSessionStateObserver)
-        }
+        mapboxNavigation = MapboxNavigation(mapboxNavigationOptions)
+            .apply {
+                registerTripSessionStateObserver(tripSessionStateObserver)
+            }
 
         initListeners()
         mapView.getMapAsync(this)
@@ -144,7 +143,7 @@ class ReplayActivity : AppCompatActivity(), OnMapReadyCallback {
             if (mapboxNavigation?.getRoutes()?.isNotEmpty() == true) {
                 navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
-            mapboxNavigation?.startTripSession()
+            mapboxNavigation?.startActiveGuidance()
             startNavigation.visibility = View.GONE
             mapboxReplayer.play()
         }
@@ -174,7 +173,7 @@ class ReplayActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onDestroy()
         mapboxReplayer.finish()
         mapboxNavigation?.unregisterTripSessionStateObserver(tripSessionStateObserver)
-        mapboxNavigation?.stopTripSession()
+        mapboxNavigation?.stopActiveGuidance()
         mapboxNavigation?.onDestroy()
         mapView.onDestroy()
     }
