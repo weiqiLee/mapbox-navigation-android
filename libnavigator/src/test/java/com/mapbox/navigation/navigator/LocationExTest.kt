@@ -1,11 +1,11 @@
 package com.mapbox.navigation.navigator
 
 import android.location.Location
-import java.util.Date
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.util.Date
 
 @RunWith(RobolectricTestRunner::class)
 class LocationExTest {

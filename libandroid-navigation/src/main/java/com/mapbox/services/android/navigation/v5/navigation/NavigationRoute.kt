@@ -12,12 +12,12 @@ import com.mapbox.core.utils.TextUtils
 import com.mapbox.geojson.Point
 import com.mapbox.services.android.navigation.v5.utils.extensions.getUnitTypeForLocale
 import com.mapbox.services.android.navigation.v5.utils.extensions.inferDeviceLocale
-import java.util.Locale
-import kotlin.collections.ArrayList
 import okhttp3.EventListener
 import okhttp3.Interceptor
 import retrofit2.Call
 import retrofit2.Callback
+import java.util.Locale
+import kotlin.collections.ArrayList
 
 /**
  * The NavigationRoute class wraps the [MapboxDirections] class with parameters which
@@ -776,7 +776,7 @@ internal constructor(
 
         private fun parseRadiuses(radiuses: String): List<Double?> =
             radiuses.split(SEMICOLON.toRegex()).dropLastWhile { it.isEmpty() }
-                    .map { if (it.isEmpty()) null else it.toDouble() }
+                .map { if (it.isEmpty()) null else it.toDouble() }
 
         private fun assembleWaypoints() {
             origin?.let { origin ->

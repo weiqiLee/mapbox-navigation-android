@@ -148,9 +148,11 @@ internal class RouteProcessorRunnable(
     ): Boolean {
         val fasterRoute = engineFactory.retrieveFasterRouteEngine()
         val fasterRouteDetectionEnabled = options.enableFasterRouteDetection()
-        return (fasterRouteDetectionEnabled &&
-            !userOffRoute &&
-            fasterRoute.shouldCheckFasterRoute(rawLocation, routeProgress))
+        return (
+            fasterRouteDetectionEnabled &&
+                !userOffRoute &&
+                fasterRoute.shouldCheckFasterRoute(rawLocation, routeProgress)
+            )
     }
 
     private fun findTriggeredMilestones(

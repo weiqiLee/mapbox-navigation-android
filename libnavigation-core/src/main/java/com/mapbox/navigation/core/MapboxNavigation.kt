@@ -58,8 +58,8 @@ import com.mapbox.navigation.utils.internal.NetworkStatusService
 import com.mapbox.navigation.utils.internal.ThreadController
 import com.mapbox.navigation.utils.internal.ifNonNull
 import com.mapbox.navigation.utils.internal.monitorChannelWithException
-import java.lang.reflect.Field
 import kotlinx.coroutines.channels.ReceiveChannel
+import java.lang.reflect.Field
 
 private const val MAPBOX_NAVIGATION_USER_AGENT_BASE = "mapbox-navigation-android"
 private const val MAPBOX_NAVIGATION_UI_USER_AGENT_BASE = "mapbox-navigation-ui-android"
@@ -595,11 +595,14 @@ constructor(
     }
 
     private fun monitorNotificationActionButton(channel: ReceiveChannel<NotificationAction>) {
-        mainJobController.scope.monitorChannelWithException(channel, { notificationAction ->
-            when (notificationAction) {
-                NotificationAction.END_NAVIGATION -> tripSession.stop()
+        mainJobController.scope.monitorChannelWithException(
+            channel,
+            { notificationAction ->
+                when (notificationAction) {
+                    NotificationAction.END_NAVIGATION -> tripSession.stop()
+                }
             }
-        })
+        )
     }
 
     /**
@@ -619,8 +622,10 @@ constructor(
                 NetworkStatusService::class.java to NetworkStatusService(context.applicationContext)
             )
             MapboxModuleType.NavigationOffboardRouter -> arrayOf(
-                String::class.java to (accessToken
-                    ?: throw RuntimeException(MAPBOX_NAVIGATION_TOKEN_EXCEPTION_OFFBOARD_ROUTER)),
+                String::class.java to (
+                    accessToken
+                        ?: throw RuntimeException(MAPBOX_NAVIGATION_TOKEN_EXCEPTION_OFFBOARD_ROUTER)
+                    ),
                 Context::class.java to context,
                 UrlSkuTokenProvider::class.java to MapboxNavigationAccounts.getInstance(context)
             )
@@ -629,8 +634,10 @@ constructor(
                 arrayOf(
                     String::class.java to accessToken,
                     MapboxNativeNavigator::class.java to MapboxNativeNavigatorImpl,
-                    OnboardRouterOptions::class.java to (navigationOptions.onboardRouterOptions
-                        ?: throw RuntimeException(MAPBOX_NAVIGATION_OPTIONS_EXCEPTION_ONBOARD_ROUTER)),
+                    OnboardRouterOptions::class.java to (
+                        navigationOptions.onboardRouterOptions
+                            ?: throw RuntimeException(MAPBOX_NAVIGATION_OPTIONS_EXCEPTION_ONBOARD_ROUTER)
+                        ),
                     Logger::class.java to logger,
                     SkuTokenProvider::class.java to MapboxNavigationAccounts.getInstance(context)
                 )
@@ -681,7 +688,8 @@ constructor(
             @FeedbackEvent.Source feedbackSource: String,
             screenshot: String?,
             feedbackSubType: Array<String>? = emptyArray()
-        ) { MapboxNavigationTelemetry.postUserFeedback(
+        ) {
+            MapboxNavigationTelemetry.postUserFeedback(
                 feedbackType,
                 description,
                 feedbackSource,

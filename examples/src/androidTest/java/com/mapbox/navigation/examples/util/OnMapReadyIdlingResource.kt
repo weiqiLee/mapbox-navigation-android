@@ -8,8 +8,8 @@ import com.mapbox.mapboxsdk.maps.MapView
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.navigation.examples.R
-import java.util.concurrent.atomic.AtomicBoolean
 import junit.framework.TestCase.assertNotNull
+import java.util.concurrent.atomic.AtomicBoolean
 
 class OnMapReadyIdlingResource
 constructor(

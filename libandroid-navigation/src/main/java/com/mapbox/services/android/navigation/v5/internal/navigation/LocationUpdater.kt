@@ -7,8 +7,8 @@ import com.mapbox.android.core.location.LocationEngine
 import com.mapbox.android.core.location.LocationEngineCallback
 import com.mapbox.android.core.location.LocationEngineRequest
 import com.mapbox.android.core.location.LocationEngineResult
-import java.lang.ref.WeakReference
 import timber.log.Timber
+import java.lang.ref.WeakReference
 
 @SuppressLint("MissingPermission")
 internal class LocationUpdater(
@@ -71,7 +71,7 @@ internal class LocationUpdater(
         LocationEngineCallback<LocationEngineResult> {
 
         private val updaterWeakReference:
-        WeakReference<LocationUpdater> = WeakReference(locationUpdater)
+            WeakReference<LocationUpdater> = WeakReference(locationUpdater)
 
         override fun onSuccess(result: LocationEngineResult) {
             updaterWeakReference.get()?.let { locationUpdater ->

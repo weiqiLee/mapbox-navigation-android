@@ -2,11 +2,11 @@ package com.mapbox.services.android.navigation.v5.navigation
 
 import android.os.AsyncTask
 import com.mapbox.services.android.navigation.v5.utils.DownloadTask
-import java.util.HashMap
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.HashMap
 
 /**
  * Triggers the downloading of the tar file included in the [ResponseBody] onto disk.

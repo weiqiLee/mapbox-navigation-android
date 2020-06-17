@@ -48,13 +48,13 @@ data class CurrentLegAnnotation(
             fun congestion(congestion: String) = apply { this.congestion = congestion }
 
             fun build() = CurrentLegAnnotation(
-                    index,
-                    distanceToAnnotation,
-                    distance,
-                    duration,
-                    speed,
-                    maxspeed,
-                    congestion
+                index,
+                distanceToAnnotation,
+                distance,
+                duration,
+                speed,
+                maxspeed,
+                congestion
             )
         }
     }

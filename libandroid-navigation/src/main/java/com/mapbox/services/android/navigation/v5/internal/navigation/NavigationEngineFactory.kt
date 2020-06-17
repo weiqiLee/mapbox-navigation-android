@@ -17,14 +17,14 @@ class NavigationEngineFactory {
     private var cameraEngine: Camera = SimpleCamera()
 
     fun retrieveOffRouteEngine() =
-            offRouteEngine
+        offRouteEngine
 
     fun updateOffRouteEngine(offRouteEngine: OffRoute) {
         this.offRouteEngine = offRouteEngine
     }
 
     fun retrieveFasterRouteEngine() =
-            fasterRouteEngine
+        fasterRouteEngine
 
     fun updateFasterRouteEngine(fasterRouteEngine: FasterRoute) {
         this.fasterRouteEngine = fasterRouteEngine

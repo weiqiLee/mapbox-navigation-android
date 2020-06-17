@@ -11,10 +11,10 @@ import com.mapbox.services.android.navigation.v5.navigation.TimeFormatType
 import com.mapbox.services.android.navigation.v5.utils.extensions.combineSpan
 import com.mapbox.services.android.navigation.v5.utils.span.SpanItem
 import com.mapbox.services.android.navigation.v5.utils.span.TextSpanItem
+import timber.log.Timber
 import java.util.ArrayList
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
-import timber.log.Timber
 
 object TimeFormatter {
 

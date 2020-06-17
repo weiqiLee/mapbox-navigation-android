@@ -11,9 +11,9 @@ import com.mapbox.navigation.base.trip.notification.TripNotification
 import com.mapbox.navigation.core.trip.service.MapboxNotificationData
 import com.mapbox.navigation.core.trip.service.NavigationNotificationService
 import com.mapbox.navigation.utils.internal.ifChannelException
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
+import java.util.concurrent.atomic.AtomicBoolean
 
 // todo make internal
 //  Currently under internal package because it's been used by TripService examples in the test app
@@ -45,19 +45,21 @@ class MapboxTripService(
         intent: Intent,
         logger: Logger
     ) : this(
-        tripNotification, {
-        try {
-            applicationContext.startService(intent)
-        } catch (e: IllegalStateException) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                applicationContext.startForegroundService(intent)
-            } else {
-                throw e
+        tripNotification,
+        {
+            try {
+                applicationContext.startService(intent)
+            } catch (e: IllegalStateException) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    applicationContext.startForegroundService(intent)
+                } else {
+                    throw e
+                }
             }
-        }
-    }, {
-        applicationContext.stopService(intent)
-    },
+        },
+        {
+            applicationContext.stopService(intent)
+        },
         logger
     )
 

@@ -34,14 +34,14 @@ import com.mapbox.navigation.utils.internal.JobControl
 import com.mapbox.navigation.utils.internal.ThreadController
 import com.mapbox.navigation.utils.internal.ifNonNull
 import com.mapbox.navigator.NavigationStatus
-import java.util.Date
-import java.util.concurrent.CopyOnWriteArraySet
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Date
+import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.TimeUnit
 
 // todo make internal
 //  Currently under internal package because it's been used by TripSession examples in the test app

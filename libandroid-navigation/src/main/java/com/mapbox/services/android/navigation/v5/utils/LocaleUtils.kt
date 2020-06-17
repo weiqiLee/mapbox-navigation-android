@@ -18,8 +18,8 @@ class LocaleUtils {
     fun getUnitTypeForLocale(locale: Locale): String {
         return when (locale.country) {
             "US", // US
-                "LR", // Liberia
-                "MM" // Burma
+            "LR", // Liberia
+            "MM" // Burma
             -> DirectionsCriteria.IMPERIAL
             else -> DirectionsCriteria.METRIC
         }

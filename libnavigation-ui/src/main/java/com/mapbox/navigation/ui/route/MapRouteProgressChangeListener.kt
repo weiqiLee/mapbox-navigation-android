@@ -102,11 +102,13 @@ internal class MapRouteProgressChangeListener(
         startingDistanceValue: Float,
         percentDistanceTraveled: Float
     ) {
-        vanishingLineAnimator?.setValues(PropertyValuesHolder.ofFloat(
-            "",
-            startingDistanceValue,
-            percentDistanceTraveled
-        ))
+        vanishingLineAnimator?.setValues(
+            PropertyValuesHolder.ofFloat(
+                "",
+                startingDistanceValue,
+                percentDistanceTraveled
+            )
+        )
         vanishingLineAnimator?.start()
     }
 

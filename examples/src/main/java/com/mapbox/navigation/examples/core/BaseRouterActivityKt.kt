@@ -51,9 +51,9 @@ import com.mapbox.navigation.utils.internal.NetworkStatusService
 import com.mapbox.navigation.utils.internal.ifNonNull
 import com.mapbox.turf.TurfConstants
 import com.mapbox.turf.TurfMeasurement
-import java.io.File
 import kotlinx.android.synthetic.main.activity_mock_navigation.*
 import timber.log.Timber
+import java.io.File
 
 /**
  * This base activity sets up various Mapbox Navigation SDK routers so that
@@ -136,25 +136,30 @@ abstract class BaseRouterActivityKt :
                         .coordinates(origin, listOf(waypoint), destination)
                         .profile(PROFILE_DRIVING_TRAFFIC)
                         .annotations(
-                            "${DirectionsCriteria.ANNOTATION_CONGESTION},${DirectionsCriteria.ANNOTATION_DISTANCE},${DirectionsCriteria.ANNOTATION_DURATION}"
+                            DirectionsCriteria.ANNOTATION_CONGESTION +
+                                ",${DirectionsCriteria.ANNOTATION_DISTANCE}" +
+                                ",${DirectionsCriteria.ANNOTATION_DURATION}"
                         )
 
-                router.getRoute(optionsBuilder.build(), object : Router.Callback {
-                    override fun onResponse(routes: List<DirectionsRoute>) {
-                        MapboxLogger.d(Message("Router.Callback#onResponse"))
-                        if (routes.isNotEmpty()) {
-                            navigationMapRoute?.addRoute(routes[0])
+                router.getRoute(
+                    optionsBuilder.build(),
+                    object : Router.Callback {
+                        override fun onResponse(routes: List<DirectionsRoute>) {
+                            MapboxLogger.d(Message("Router.Callback#onResponse"))
+                            if (routes.isNotEmpty()) {
+                                navigationMapRoute?.addRoute(routes[0])
+                            }
+                        }
+
+                        override fun onFailure(throwable: Throwable) {
+                            MapboxLogger.e(Message("Router.Callback#onFailure"), throwable)
+                        }
+
+                        override fun onCanceled() {
+                            MapboxLogger.d(Message("Router.Callback#onCanceled"))
                         }
                     }
-
-                    override fun onFailure(throwable: Throwable) {
-                        MapboxLogger.e(Message("Router.Callback#onFailure"), throwable)
-                    }
-
-                    override fun onCanceled() {
-                        MapboxLogger.d(Message("Router.Callback#onCanceled"))
-                    }
-                })
+                )
             }
         }
     }
@@ -273,17 +278,32 @@ abstract class BaseRouterActivityKt :
             )
         }
 
-        fun setupOnboardRouter(accessToken: String, deviceProfile: DeviceProfile, context: Context): Router {
-            val externalFilePath = Environment.getExternalStoragePublicDirectory("Offline").absolutePath
+        fun setupOnboardRouter(
+            accessToken: String,
+            deviceProfile: DeviceProfile,
+            context: Context
+        ): Router {
+            val externalFilePath =
+                Environment.getExternalStoragePublicDirectory("Offline").absolutePath
             val file = File(externalFilePath, "tiles")
             val onboardRouterOptions = OnboardRouterOptions.Builder()
                 .filePath(file.absolutePath)
                 .build()
             val nativeNavigator = MapboxNativeNavigatorImpl.create(deviceProfile, null)
-            return MapboxOnboardRouter(accessToken, nativeNavigator, onboardRouterOptions, MapboxLogger, MapboxNavigationAccounts.getInstance(context))
+            return MapboxOnboardRouter(
+                accessToken,
+                nativeNavigator,
+                onboardRouterOptions,
+                MapboxLogger,
+                MapboxNavigationAccounts.getInstance(context)
+            )
         }
 
-        fun setupHybridRouter(accessToken: String, deviceProfile: DeviceProfile, applicationContext: Context): Router {
+        fun setupHybridRouter(
+            accessToken: String,
+            deviceProfile: DeviceProfile,
+            applicationContext: Context
+        ): Router {
             return MapboxHybridRouter(
                 setupOnboardRouter(accessToken, deviceProfile, applicationContext),
                 setupOffboardRouter(applicationContext),

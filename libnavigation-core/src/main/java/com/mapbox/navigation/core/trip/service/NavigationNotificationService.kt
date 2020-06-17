@@ -50,9 +50,12 @@ internal class NavigationNotificationService : Service() {
     }
 
     private fun startForegroundNotification() {
-        ioJobController.scope.monitorChannelWithException(MapboxTripService.getNotificationDataChannel(), { notificationResponse ->
-            notificationResponse.notification.flags = Notification.FLAG_FOREGROUND_SERVICE
-            startForeground(notificationResponse.notificationId, notificationResponse.notification)
-        })
+        ioJobController.scope.monitorChannelWithException(
+            MapboxTripService.getNotificationDataChannel(),
+            { notificationResponse ->
+                notificationResponse.notification.flags = Notification.FLAG_FOREGROUND_SERVICE
+                startForeground(notificationResponse.notificationId, notificationResponse.notification)
+            }
+        )
     }
 }

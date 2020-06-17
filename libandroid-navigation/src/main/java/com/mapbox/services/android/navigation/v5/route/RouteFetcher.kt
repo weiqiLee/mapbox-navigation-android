@@ -9,12 +9,12 @@ import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress
 import com.mapbox.services.android.navigation.v5.utils.RouteUtils
 import com.mapbox.services.android.navigation.v5.utils.extensions.ifNonNull
-import java.lang.ref.WeakReference
-import java.util.concurrent.CopyOnWriteArrayList
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import timber.log.Timber
+import java.lang.ref.WeakReference
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * This class can be used to fetch new routes given a [Location] origin and

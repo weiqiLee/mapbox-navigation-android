@@ -36,6 +36,13 @@ import com.mapbox.navigation.utils.internal.Time
 import com.mapbox.navigation.utils.internal.ifChannelException
 import com.mapbox.navigation.utils.internal.ifNonNull
 import com.mapbox.navigation.utils.internal.monitorChannelWithException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import java.lang.ref.WeakReference
 import java.util.ArrayDeque
 import java.util.Date
@@ -44,13 +51,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.coroutineContext
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.selects.select
 
 private data class DynamicallyUpdatedRouteValues(
     val distanceRemaining: AtomicLong = AtomicLong(0),
@@ -165,8 +165,11 @@ internal object MapboxNavigationTelemetry : MapboxNavigationTelemetryInterface {
     private fun telemetryEventGate(event: MetricEvent) =
         when (isTelemetryAvailable()) {
             false -> {
-                Log.i(TAG, "Route not selected. Telemetry event not sent. Caused by: Navigation " +
-                    "Session started: ${dynamicValues.sessionStarted.get()} Route exists: ${dynamicValues.originalRoute.get() != null}")
+                Log.i(
+                    TAG,
+                    "Route not selected. Telemetry event not sent. Caused by: Navigation " +
+                        "Session started: ${dynamicValues.sessionStarted.get()} Route exists: ${dynamicValues.originalRoute.get() != null}"
+                )
                 false
             }
             true -> {
@@ -249,36 +252,38 @@ internal object MapboxNavigationTelemetry : MapboxNavigationTelemetryInterface {
 
             dynamicValues.distanceRemaining.set(newRoute.route.distance()?.toLong() ?: -1)
             dynamicValues.timeSinceLastReroute.set((Time.SystemImpl.millis() - dynamicValues.timeOfRerouteEvent.get()).toInt())
-            callbackDispatcher.addLocationEventDescriptor(ItemAccumulationEventDescriptor(
-                ArrayDeque(callbackDispatcher.getCopyOfCurrentLocationBuffer()),
-                ArrayDeque()
-            ) { preEventBuffer, postEventBuffer ->
-                telemetryThreadControl.scope.launch {
+            callbackDispatcher.addLocationEventDescriptor(
+                ItemAccumulationEventDescriptor(
+                    ArrayDeque(callbackDispatcher.getCopyOfCurrentLocationBuffer()),
+                    ArrayDeque()
+                ) { preEventBuffer, postEventBuffer ->
+                    telemetryThreadControl.scope.launch {
 
-                    // Populate the RerouteEvent
-                    val rerouteEvent = RerouteEvent(populateSessionState()).apply {
-                        newDistanceRemaining = newRoute.route.distance()?.toInt() ?: -1
-                        newDurationRemaining = newRoute.route.duration()?.toInt() ?: -1
-                        newRouteGeometry = obtainGeometry(newRoute.route)
-                    }
+                        // Populate the RerouteEvent
+                        val rerouteEvent = RerouteEvent(populateSessionState()).apply {
+                            newDistanceRemaining = newRoute.route.distance()?.toInt() ?: -1
+                            newDurationRemaining = newRoute.route.duration()?.toInt() ?: -1
+                            newRouteGeometry = obtainGeometry(newRoute.route)
+                        }
 
-                    // Populate and then send a NavigationRerouteEvent
-                    val metricsRouteProgress = MetricsRouteProgress(prevRoute.routeProgress)
-                    val navigationRerouteEvent = NavigationRerouteEvent(PhoneState(context), rerouteEvent, metricsRouteProgress).apply {
-                        locationsBefore = preEventBuffer.toTypedArray()
-                        locationsAfter = postEventBuffer.toTypedArray()
-                        secondsSinceLastReroute = dynamicValues.timeSinceLastReroute.get() / ONE_SECOND
-                        distanceRemaining = dynamicValues.distanceRemaining.get().toInt()
-                        distanceCompleted = dynamicValues.distanceCompleted.get().toInt()
-                        durationRemaining = dynamicValues.durationRemaining.get()
+                        // Populate and then send a NavigationRerouteEvent
+                        val metricsRouteProgress = MetricsRouteProgress(prevRoute.routeProgress)
+                        val navigationRerouteEvent = NavigationRerouteEvent(PhoneState(context), rerouteEvent, metricsRouteProgress).apply {
+                            locationsBefore = preEventBuffer.toTypedArray()
+                            locationsAfter = postEventBuffer.toTypedArray()
+                            secondsSinceLastReroute = dynamicValues.timeSinceLastReroute.get() / ONE_SECOND
+                            distanceRemaining = dynamicValues.distanceRemaining.get().toInt()
+                            distanceCompleted = dynamicValues.distanceCompleted.get().toInt()
+                            durationRemaining = dynamicValues.durationRemaining.get()
+                        }
+                        populateNavigationEvent(navigationRerouteEvent)
+                        val result = telemetryEventGate(
+                            navigationRerouteEvent
+                        )
+                        Log.d(TAG, "REROUTE event sent $result")
                     }
-                    populateNavigationEvent(navigationRerouteEvent)
-                    val result = telemetryEventGate(
-                        navigationRerouteEvent
-                    )
-                    Log.d(TAG, "REROUTE event sent $result")
                 }
-            })
+            )
         }
     }
 
@@ -372,15 +377,18 @@ internal object MapboxNavigationTelemetry : MapboxNavigationTelemetryInterface {
     )
 
     private fun monitorOffRouteEvents() {
-        telemetryThreadControl.scope.monitorChannelWithException(callbackDispatcher.getOffRouteEventChannel(), { offRoute ->
-            when (offRoute) {
-                true -> {
-                    handleOffRouteEvent()
-                }
-                false -> {
+        telemetryThreadControl.scope.monitorChannelWithException(
+            callbackDispatcher.getOffRouteEventChannel(),
+            { offRoute ->
+                when (offRoute) {
+                    true -> {
+                        handleOffRouteEvent()
+                    }
+                    false -> {
+                    }
                 }
             }
-        })
+        )
     }
 
     private fun monitorJobCancelation() {
@@ -423,23 +431,25 @@ internal object MapboxNavigationTelemetry : MapboxNavigationTelemetryInterface {
     ) {
         Log.d(TAG, "trying to post a user feedback event")
         val lastProgress = callbackDispatcher.getRouteProgress()
-        callbackDispatcher.addLocationEventDescriptor(ItemAccumulationEventDescriptor(
-            ArrayDeque(callbackDispatcher.getCopyOfCurrentLocationBuffer()),
-            ArrayDeque()
-        ) { preEventBuffer, postEventBuffer ->
-            val feedbackEvent = NavigationFeedbackEvent(PhoneState(context), MetricsRouteProgress(lastProgress.routeProgress)).apply {
-                this.feedbackType = feedbackType
-                this.source = feedbackSource
-                this.description = description
-                this.screenshot = screenshot
-                this.locationsBefore = preEventBuffer.toTypedArray()
-                this.locationsAfter = postEventBuffer.toTypedArray()
-                this.feedbackSubType = feedbackSubType
+        callbackDispatcher.addLocationEventDescriptor(
+            ItemAccumulationEventDescriptor(
+                ArrayDeque(callbackDispatcher.getCopyOfCurrentLocationBuffer()),
+                ArrayDeque()
+            ) { preEventBuffer, postEventBuffer ->
+                val feedbackEvent = NavigationFeedbackEvent(PhoneState(context), MetricsRouteProgress(lastProgress.routeProgress)).apply {
+                    this.feedbackType = feedbackType
+                    this.source = feedbackSource
+                    this.description = description
+                    this.screenshot = screenshot
+                    this.locationsBefore = preEventBuffer.toTypedArray()
+                    this.locationsAfter = postEventBuffer.toTypedArray()
+                    this.feedbackSubType = feedbackSubType
+                }
+                populateNavigationEvent(feedbackEvent)
+                val eventPosted = telemetryEventGate(feedbackEvent)
+                Log.i(TAG, "Posting a user feedback event $eventPosted")
             }
-            populateNavigationEvent(feedbackEvent)
-            val eventPosted = telemetryEventGate(feedbackEvent)
-            Log.i(TAG, "Posting a user feedback event $eventPosted")
-        })
+        )
     }
 
     /**

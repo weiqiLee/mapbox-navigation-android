@@ -14,8 +14,8 @@ import com.mapbox.geojson.Point
 import com.mapbox.services.android.navigation.v5.internal.location.replay.ReplayLocationDispatcher
 import com.mapbox.services.android.navigation.v5.internal.location.replay.ReplayRouteLocationConverter
 import com.mapbox.services.android.navigation.v5.internal.location.replay.ReplayRouteLocationListener
-import java.util.ArrayList
 import timber.log.Timber
+import java.util.ArrayList
 
 class ReplayRouteLocationEngine : LocationEngine, Runnable {
     private lateinit var converter: ReplayRouteLocationConverter

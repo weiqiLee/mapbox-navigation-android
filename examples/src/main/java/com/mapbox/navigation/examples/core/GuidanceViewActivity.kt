@@ -33,10 +33,10 @@ import com.mapbox.navigation.examples.R
 import com.mapbox.navigation.examples.utils.Utils
 import com.mapbox.navigation.ui.camera.NavigationCamera
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
-import java.util.Collections
 import kotlinx.android.synthetic.main.activity_guidance_view.*
 import kotlinx.android.synthetic.main.activity_guidance_view.mapView
 import kotlinx.android.synthetic.main.activity_guidance_view.startNavigation
+import java.util.Collections
 
 /**
  * This activity shows how to display Mapbox's guidance view images,
@@ -63,14 +63,14 @@ class GuidanceViewActivity : AppCompatActivity(), OnMapReadyCallback {
         mapView.getMapAsync(this)
 
         val options = MapboxNavigation.defaultNavigationOptions(
-                this,
-                Utils.getMapboxAccessToken(this)
+            this,
+            Utils.getMapboxAccessToken(this)
         )
 
         mapboxNavigation = MapboxNavigation(
-                applicationContext,
-                options,
-                locationEngine = ReplayLocationEngine(mapboxReplayer)
+            applicationContext,
+            options,
+            locationEngine = ReplayLocationEngine(mapboxReplayer)
         ).also {
             it.registerRouteProgressObserver(routeProgressObserver)
             it.registerBannerInstructionsObserver(bannerInstructionObserver)
@@ -82,9 +82,9 @@ class GuidanceViewActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(mapboxMap: MapboxMap) {
         mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
             val cameraPosition = CameraPosition.Builder()
-                    .target(LatLng(destination.latitude(), destination.longitude()))
-                    .zoom(16.5)
-                    .build()
+                .target(LatLng(destination.latitude(), destination.longitude()))
+                .zoom(16.5)
+                .build()
             mapboxMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
             navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap, this, true).also {
                 it.addProgressChangeListener(mapboxNavigation)
@@ -93,14 +93,14 @@ class GuidanceViewActivity : AppCompatActivity(), OnMapReadyCallback {
             // Ideally we should use Mapbox.getAccessToken(), but to show GuidanceView we need a
             // specific access token for route request.
             mapboxNavigation.requestRoutes(
-                    RouteOptions.builder().applyDefaultParams()
-                            .accessToken(Utils.getMapboxAccessToken(this))
-                            .coordinates(origin, null, destination)
-                            .alternatives(true)
-                            .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-                            .bannerInstructions(true)
-                            .build(),
-                    routesReqCallback
+                RouteOptions.builder().applyDefaultParams()
+                    .accessToken(Utils.getMapboxAccessToken(this))
+                    .coordinates(origin, null, destination)
+                    .alternatives(true)
+                    .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                    .bannerInstructions(true)
+                    .build(),
+                routesReqCallback
             )
 
             mapboxNavigation.registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))

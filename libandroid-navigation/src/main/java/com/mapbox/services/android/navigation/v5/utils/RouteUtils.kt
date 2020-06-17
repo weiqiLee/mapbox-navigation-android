@@ -5,8 +5,8 @@ import com.mapbox.api.directions.v5.models.LegStep
 import com.mapbox.geojson.Point
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgressState
-import kotlin.collections.ArrayList
 import timber.log.Timber
+import kotlin.collections.ArrayList
 
 class RouteUtils {
 
@@ -156,7 +156,7 @@ class RouteUtils {
             allWaypointNames.copyOfRange(
                 allWaypointNames.size - remainingWaypointsCount,
                 allWaypointNames.size
-        )
+            )
         val resultWaypointNames =
             arrayOfNulls<String>(remainingWaypointNames.size + ORIGIN_WAYPOINT_NAME_THRESHOLD)
         resultWaypointNames[ORIGIN_WAYPOINT_INDEX] = allWaypointNames[ORIGIN_WAYPOINT_INDEX]
@@ -220,14 +220,14 @@ class RouteUtils {
         currentStep: LegStep?,
         stepDistanceRemaining: Double
     ): BannerInstructions? = currentStep?.bannerInstructions()?.let {
-            val instructions: List<BannerInstructions> = sortBannerInstructions(it)
-            instructions.firstOrNull { instruction ->
-                instruction.distanceAlongGeometry().toInt() >= stepDistanceRemaining.toInt()
-            } ?: when (instructions.isNotEmpty()) {
-                true -> instructions[FIRST_INSTRUCTION]
-                else -> null
-            }
+        val instructions: List<BannerInstructions> = sortBannerInstructions(it)
+        instructions.firstOrNull { instruction ->
+            instruction.distanceAlongGeometry().toInt() >= stepDistanceRemaining.toInt()
+        } ?: when (instructions.isNotEmpty()) {
+            true -> instructions[FIRST_INSTRUCTION]
+            else -> null
         }
+    }
 
     private fun sortBannerInstructions(instructions: List<BannerInstructions>): List<BannerInstructions> =
         instructions.toMutableList()

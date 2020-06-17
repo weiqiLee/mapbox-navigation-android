@@ -30,9 +30,12 @@ class WorkThreadHandler(
         if (!isStarted) {
             return
         }
-        handler.postDelayed({
-            task.invoke()
-        }, delayMillis)
+        handler.postDelayed(
+            {
+                task.invoke()
+            },
+            delayMillis
+        )
     }
 
     override fun start() {

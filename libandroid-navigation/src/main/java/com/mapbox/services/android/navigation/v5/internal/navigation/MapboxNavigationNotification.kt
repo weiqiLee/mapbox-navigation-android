@@ -264,9 +264,11 @@ internal class MapboxNavigationNotification : NavigationNotification {
     }
 
     private fun updateInstructionText(bannerInstruction: BannerInstructions?) {
-        if (bannerInstruction != null && (instructionText == null || newInstructionText(
+        if (bannerInstruction != null && (
+            instructionText == null || newInstructionText(
                 bannerInstruction
-            ))
+            )
+            )
         ) {
             updateViewsWithInstruction(bannerInstruction.primary().text())
             instructionText = bannerInstruction.primary().text()
@@ -393,10 +395,10 @@ internal class MapboxNavigationNotification : NavigationNotification {
         maneuverCanvas.restoreToCount(maneuverCanvas.saveCount)
 
         return if (isManeuverIconNeedFlip(
-                currentManeuverType,
-                currentManeuverModifier,
-                drivingSide
-            )
+            currentManeuverType,
+            currentManeuverModifier,
+            drivingSide
+        )
         ) {
             Bitmap.createBitmap(
                 maneuverImage,

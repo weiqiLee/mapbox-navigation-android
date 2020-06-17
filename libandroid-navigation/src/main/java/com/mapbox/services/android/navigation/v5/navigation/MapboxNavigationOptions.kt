@@ -126,7 +126,7 @@ data class MapboxNavigationOptions(
 
         fun navigationLocationEngineIntervalLagInMilliseconds(lagInMilliseconds: Int) = apply {
             this.navigationLocationEngineIntervalLagInMilliseconds =
-                    lagInMilliseconds
+                lagInMilliseconds
         }
 
         /**

@@ -16,8 +16,11 @@ import com.mapbox.services.android.navigation.v5.milestone.Milestone
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress
 
-interface ExampleView : PermissionsListener, OnMapReadyCallback,
-    OnFeatureClickListener, OnRouteSelectionChangeListener {
+interface ExampleView :
+    PermissionsListener,
+    OnMapReadyCallback,
+    OnFeatureClickListener,
+    OnRouteSelectionChangeListener {
 
     fun initialize()
 

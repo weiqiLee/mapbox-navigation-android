@@ -127,8 +127,10 @@ class DistanceFormatter(
      * @return true if new formatter is needed, false otherwise
      */
     fun shouldUpdate(language: String, unitType: String, roundingIncrement: Int): Boolean {
-        return (this.language != language || this.unitType != unitType ||
-            this.roundingIncrement != roundingIncrement)
+        return (
+            this.language != language || this.unitType != unitType ||
+                this.roundingIncrement != roundingIncrement
+            )
     }
 
     /**

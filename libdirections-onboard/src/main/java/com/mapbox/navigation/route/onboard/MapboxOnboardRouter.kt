@@ -20,11 +20,11 @@ import com.mapbox.navigation.utils.NavigationException
 import com.mapbox.navigation.utils.internal.ThreadController
 import com.mapbox.navigator.RouterParams
 import com.mapbox.navigator.TileEndpointConfiguration
-import java.io.File
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 /**
  * MapboxOnboardRouter provides offline route fetching
@@ -70,14 +70,14 @@ class MapboxOnboardRouter(
                 null,
                 THREADS_COUNT,
                 TileEndpointConfiguration(
-                        options.tilesUri.toString(),
-                        options.tilesVersion,
-                        accessToken,
-                        USER_AGENT,
-                        "",
-                        NativeSkuTokenProvider(skuTokenProvider)
-                    )
+                    options.tilesUri.toString(),
+                    options.tilesVersion,
+                    accessToken,
+                    USER_AGENT,
+                    "",
+                    NativeSkuTokenProvider(skuTokenProvider)
                 )
+            )
             navigatorNative.configureRouter(routerParams)
         }
     }

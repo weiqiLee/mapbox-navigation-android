@@ -13,12 +13,12 @@ import com.mapbox.services.android.navigation.v5.utils.RouteUtils
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.ArrayList
-import java.util.Locale
 import junit.framework.TestCase.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.util.ArrayList
+import java.util.Locale
 
 @RunWith(RobolectricTestRunner::class)
 class RouteFetcherTest {

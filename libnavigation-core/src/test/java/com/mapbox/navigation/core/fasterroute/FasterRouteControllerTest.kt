@@ -13,12 +13,12 @@ import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 @ExperimentalCoroutinesApi
 class FasterRouteControllerTest {
@@ -127,10 +127,12 @@ class FasterRouteControllerTest {
 
         fasterRouteController.attach(fasterRouteObserver)
         coroutineRule.testDispatcher.advanceTimeBy(TimeUnit.MINUTES.toMillis(6))
-        val routes = listOf<DirectionsRoute>(mockk {
+        val routes = listOf<DirectionsRoute>(
+            mockk {
                 every { routeIndex() } returns "0"
                 every { duration() } returns 351.013
-            })
+            }
+        )
         routesRequestCallbacks.captured.onRoutesReady(routes)
 
         verify(exactly = 1) { fasterRouteObserver.onFasterRoute(currentRoute, routes, true) }
@@ -157,10 +159,12 @@ class FasterRouteControllerTest {
 
         fasterRouteController.attach(fasterRouteObserver)
         coroutineRule.testDispatcher.advanceTimeBy(TimeUnit.MINUTES.toMillis(6))
-        val routes = listOf<DirectionsRoute>(mockk {
-            every { routeIndex() } returns "0"
-            every { duration() } returns 951.013
-        })
+        val routes = listOf<DirectionsRoute>(
+            mockk {
+                every { routeIndex() } returns "0"
+                every { duration() } returns 951.013
+            }
+        )
         routesRequestCallbacks.captured.onRoutesReady(routes)
 
         verify(exactly = 1) { fasterRouteObserver.onFasterRoute(currentRoute, routes, false) }

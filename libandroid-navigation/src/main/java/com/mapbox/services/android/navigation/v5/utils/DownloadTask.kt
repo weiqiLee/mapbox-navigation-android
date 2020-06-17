@@ -1,11 +1,11 @@
 package com.mapbox.services.android.navigation.v5.utils
 
 import android.os.AsyncTask
+import okhttp3.ResponseBody
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import okhttp3.ResponseBody
 
 /**
  * This class is an [AsyncTask] that downloads a file from a [ResponseBody].

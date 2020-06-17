@@ -131,8 +131,10 @@ internal class NavigationService : Service() {
         val locationEngine = mapboxNavigation.locationEngine
         val locationEngineRequest = mapboxNavigation.retrieveLocationEngineRequest()
         val dispatcher = mapboxNavigation.eventDispatcher
-        locationUpdater = LocationUpdater(applicationContext, thread, dispatcher,
-                locationEngine, locationEngineRequest)
+        locationUpdater = LocationUpdater(
+            applicationContext, thread, dispatcher,
+            locationEngine, locationEngineRequest
+        )
     }
 
     private fun startForegroundNotification(navigationNotification: NavigationNotification) {

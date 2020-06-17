@@ -30,19 +30,26 @@ object ManeuverIconHelper {
     val MANEUVER_ICON_DRAWER_MAP: Map<Pair<String, String>, ManeuverIconDrawer> =
         object : HashMap<Pair<String, String>, ManeuverIconDrawer>() {
             init {
-                put(Pair(STEP_MANEUVER_TYPE_MERGE, null),
+                put(
+                    Pair(STEP_MANEUVER_TYPE_MERGE, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawMerge(canvas, primaryColor, secondaryColor, size)
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_OFF_RAMP, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_OFF_RAMP, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawOffRamp(canvas, primaryColor, secondaryColor, size)
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_FORK, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_FORK, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawFork(canvas, primaryColor, secondaryColor, size)
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_ROUNDABOUT, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_ROUNDABOUT, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawRoundabout(
                             canvas,
@@ -51,8 +58,10 @@ object ManeuverIconHelper {
                             size,
                             roundaboutAngle
                         )
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_ROUNDABOUT_TURN, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_ROUNDABOUT_TURN, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawRoundabout(
                             canvas,
@@ -61,8 +70,10 @@ object ManeuverIconHelper {
                             size,
                             roundaboutAngle
                         )
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_EXIT_ROUNDABOUT, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_EXIT_ROUNDABOUT, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawRoundabout(
                             canvas,
@@ -71,8 +82,10 @@ object ManeuverIconHelper {
                             size,
                             roundaboutAngle
                         )
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_ROTARY, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_ROTARY, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawRoundabout(
                             canvas,
@@ -81,8 +94,10 @@ object ManeuverIconHelper {
                             size,
                             roundaboutAngle
                         )
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_EXIT_ROTARY, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_EXIT_ROTARY, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawRoundabout(
                             canvas,
@@ -91,59 +106,86 @@ object ManeuverIconHelper {
                             size,
                             roundaboutAngle
                         )
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_ARRIVE, null),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_ARRIVE, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrive(canvas, primaryColor, size)
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_ARRIVE, STEP_MANEUVER_MODIFIER_STRAIGHT),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_ARRIVE, STEP_MANEUVER_MODIFIER_STRAIGHT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrive(canvas, primaryColor, size)
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_ARRIVE, STEP_MANEUVER_MODIFIER_RIGHT),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_ARRIVE, STEP_MANEUVER_MODIFIER_RIGHT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArriveRight(canvas, primaryColor, size)
-                    })
-                put(Pair(STEP_MANEUVER_TYPE_ARRIVE, STEP_MANEUVER_MODIFIER_LEFT),
+                    }
+                )
+                put(
+                    Pair(STEP_MANEUVER_TYPE_ARRIVE, STEP_MANEUVER_MODIFIER_LEFT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArriveRight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_SLIGHT_RIGHT),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_SLIGHT_RIGHT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowSlightRight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_RIGHT),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_RIGHT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowRight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_SHARP_RIGHT),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_SHARP_RIGHT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowSharpRight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_SLIGHT_LEFT),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_SLIGHT_LEFT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowSlightRight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_LEFT),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_LEFT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowRight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_SHARP_LEFT),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_SHARP_LEFT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowSharpRight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_UTURN),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_UTURN),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrow180Right(canvas, primaryColor, size)
-                    })
-                put(Pair(null, STEP_MANEUVER_MODIFIER_STRAIGHT),
+                    }
+                )
+                put(
+                    Pair(null, STEP_MANEUVER_MODIFIER_STRAIGHT),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowStraight(canvas, primaryColor, size)
-                    })
-                put(Pair(null, null),
+                    }
+                )
+                put(
+                    Pair(null, null),
                     ManeuverIconDrawer { canvas, primaryColor, secondaryColor, size, roundaboutAngle ->
                         ManeuversStyleKit.drawArrowStraight(canvas, primaryColor, size)
-                    })
+                    }
+                )
             }
         }
 

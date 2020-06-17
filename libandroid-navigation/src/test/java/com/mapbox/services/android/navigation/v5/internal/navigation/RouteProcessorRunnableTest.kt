@@ -17,12 +17,12 @@ import com.mapbox.services.android.navigation.v5.snap.SnapToRoute
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.ArrayList
-import java.util.Date
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
+import java.util.ArrayList
+import java.util.Date
 
 @RunWith(RobolectricTestRunner::class)
 class RouteProcessorRunnableTest {

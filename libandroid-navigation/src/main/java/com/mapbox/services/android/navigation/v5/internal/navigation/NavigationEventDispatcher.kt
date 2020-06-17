@@ -13,8 +13,8 @@ import com.mapbox.services.android.navigation.v5.route.FasterRouteListener
 import com.mapbox.services.android.navigation.v5.routeprogress.ProgressChangeListener
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress
 import com.mapbox.services.android.navigation.v5.utils.RouteUtils
-import java.util.concurrent.CopyOnWriteArrayList
 import timber.log.Timber
+import java.util.concurrent.CopyOnWriteArrayList
 
 internal class NavigationEventDispatcher {
 

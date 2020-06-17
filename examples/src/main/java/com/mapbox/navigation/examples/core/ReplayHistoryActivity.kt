@@ -33,11 +33,6 @@ import com.mapbox.navigation.examples.utils.Utils
 import com.mapbox.navigation.examples.utils.extensions.toPoint
 import com.mapbox.navigation.ui.camera.NavigationCamera
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
-import java.io.IOException
-import java.io.InputStream
-import java.nio.charset.Charset.forName
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.android.synthetic.main.activity_replay_history_layout.*
 import kotlinx.android.synthetic.main.activity_trip_service.mapView
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +42,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.io.InputStream
+import java.nio.charset.Charset.forName
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * This activity shows how to use replay ride history.
@@ -91,7 +91,8 @@ class ReplayHistoryActivity : AppCompatActivity() {
 
             initLocationComponent(locationEngine, style, mapboxMap)
 
-            val navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap, this@ReplayHistoryActivity, true)
+            val navigationMapboxMap =
+                NavigationMapboxMap(mapView, mapboxMap, this@ReplayHistoryActivity, true)
             val navigationContext = ReplayNavigationContext(
                 locationEngine,
                 mapboxMap,
@@ -114,7 +115,10 @@ class ReplayHistoryActivity : AppCompatActivity() {
 
     private suspend fun loadReplayHistory(): List<ReplayEventBase> = suspendCoroutine { cont ->
         val replayHistoryMapper = ReplayHistoryMapper(ReplayCustomEventMapper(), MapboxLogger)
-        val rideHistoryExample = loadHistoryJsonFromAssets(this@ReplayHistoryActivity, "replay-history-activity.json")
+        val rideHistoryExample = loadHistoryJsonFromAssets(
+            this@ReplayHistoryActivity,
+            "replay-history-activity.json"
+        )
         val replayEvents = replayHistoryMapper.mapToReplayEvents(rideHistoryExample)
         cont.resume(replayEvents)
     }
@@ -122,7 +126,8 @@ class ReplayHistoryActivity : AppCompatActivity() {
     private fun createMapboxNavigation(locationEngine: LocationEngine): MapboxNavigation {
         val accessToken = Utils.getMapboxAccessToken(this)
         val mapboxNavigationOptions = MapboxNavigation.defaultNavigationOptions(
-            this, accessToken)
+            this, accessToken
+        )
 
         return MapboxNavigation(
             applicationContext,
@@ -197,14 +202,19 @@ class ReplayHistoryActivity : AppCompatActivity() {
     private fun ReplayNavigationContext.startNavigation() {
         if (mapboxNavigation.getRoutes().isNotEmpty()) {
             navigationMapboxMap.updateLocationLayerRenderMode(RenderMode.GPS)
-            navigationMapboxMap.updateCameraTrackingMode(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
+            navigationMapboxMap
+                .updateCameraTrackingMode(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
             navigationMapboxMap.startCamera(mapboxNavigation.getRoutes()[0])
         }
         mapboxNavigation.startTripSession()
     }
 
     @SuppressLint("RestrictedApi")
-    private fun initLocationComponent(locationEngine: LocationEngine, loadedMapStyle: Style, mapboxMap: MapboxMap) {
+    private fun initLocationComponent(
+        locationEngine: LocationEngine,
+        loadedMapStyle: Style,
+        mapboxMap: MapboxMap
+    ) {
         mapboxMap.moveCamera(CameraUpdateFactory.zoomTo(15.0))
         mapboxMap.locationComponent.let { locationComponent ->
             val locationComponentActivationOptions =
@@ -308,7 +318,8 @@ private class ReplayCustomEventMapper : CustomEventMapper {
         return when (eventType) {
             "start_transit" -> ReplayEventStartTransit(
                 eventTimestamp = properties["event_timestamp"] as Double,
-                properties = properties["properties"] as Double)
+                properties = properties["properties"] as Double
+            )
             "initial_route" -> {
                 val eventProperties = properties["properties"] as Map<*, *>
                 val routeOptions = eventProperties["routeOptions"] as Map<*, *>

@@ -53,7 +53,9 @@ class NavigationApplication : MultiDexApplication() {
 
     private fun setupMapbox() {
         val mapboxAccessToken = Utils.getMapboxAccessToken(applicationContext)
-        if (TextUtils.isEmpty(mapboxAccessToken) || mapboxAccessToken == DEFAULT_MAPBOX_ACCESS_TOKEN) {
+        if (TextUtils.isEmpty(mapboxAccessToken) ||
+            mapboxAccessToken == DEFAULT_MAPBOX_ACCESS_TOKEN
+        ) {
             Timber.w("Mapbox access token isn't set!")
         }
 

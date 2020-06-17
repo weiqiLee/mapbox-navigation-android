@@ -9,9 +9,9 @@ import com.mapbox.navigation.base.route.Router
 import com.mapbox.navigation.utils.internal.NetworkStatusService
 import com.mapbox.navigation.utils.internal.ThreadController
 import com.mapbox.navigation.utils.internal.monitorChannelWithException
+import kotlinx.coroutines.Job
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicReference
-import kotlinx.coroutines.Job
 
 /**
  * MapboxHybridRouter combines onboard and offboard Routers.
@@ -48,16 +48,20 @@ class MapboxHybridRouter(
      * on that state we use either the off-board or on-board router.
      */
     init {
-        networkStatusJob = jobControl.scope.monitorChannelWithException(networkStatusService.getNetworkStatusChannel(), { networkStatus ->
-            when (networkStatus.isNetworkAvailable) {
-                true -> {
-                    routeDispatchHandler.set(offboardRouterHandler)
+        networkStatusJob = jobControl.scope.monitorChannelWithException(
+            networkStatusService.getNetworkStatusChannel(),
+            { networkStatus ->
+                when (networkStatus.isNetworkAvailable) {
+                    true -> {
+                        routeDispatchHandler.set(offboardRouterHandler)
+                    }
+                    false -> {
+                        routeDispatchHandler.set(onboardRouterHandler)
+                    }
                 }
-                false -> {
-                    routeDispatchHandler.set(onboardRouterHandler)
-                }
-            }
-        }, networkStatusService::cleanup)
+            },
+            networkStatusService::cleanup
+        )
     }
 
     /**

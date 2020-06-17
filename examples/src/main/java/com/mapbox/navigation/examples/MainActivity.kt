@@ -13,8 +13,10 @@ import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.navigation.examples.settings.NavigationSettingsActivity
 import com.mapbox.navigation.navigator.internal.MapboxNativeNavigatorImpl
+import kotlinx.android.synthetic.main.activity_main.cardCore
+import kotlinx.android.synthetic.main.activity_main.cardUI
+import kotlinx.android.synthetic.main.activity_main.settingsFab
 import java.util.ArrayList
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity(), PermissionsListener {
 
@@ -56,7 +58,8 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         Toast
             .makeText(
                 this,
-                "This app needs location and storage permissions" + "in order to show its functionality.",
+                "This app needs location and storage permissions" +
+                    "in order to show its functionality.",
                 Toast.LENGTH_LONG
             ).show()
     }
@@ -69,17 +72,28 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         if (requestCode == 0) {
             permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
         } else {
-            when (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            when (
+                grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ) {
                 true -> {
                     cardCore.isClickable = true
                 }
                 else -> {
                     cardCore.isClickable = false
-                    Toast.makeText(this, "You didn't grant storage permissions.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        "You didn't grant storage permissions.",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
@@ -88,9 +102,9 @@ class MainActivity : AppCompatActivity(), PermissionsListener {
     private fun requestPermissionIfNotGranted(permission: String) {
         val permissionsNeeded = ArrayList<String>()
         if (ContextCompat.checkSelfPermission(
-                this,
-                permission
-            ) != PackageManager.PERMISSION_GRANTED
+            this,
+            permission
+        ) != PackageManager.PERMISSION_GRANTED
         ) {
             permissionsNeeded.add(permission)
             ActivityCompat.requestPermissions(this, permissionsNeeded.toTypedArray(), 10)

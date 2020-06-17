@@ -9,13 +9,13 @@ import com.mapbox.navigation.core.Rounding.INCREMENT_FIFTY
 import com.mapbox.navigation.core.internal.MapboxDistanceFormatter
 import com.mapbox.navigation.trip.notification.internal.TimeFormatter.formatTime
 import com.mapbox.navigation.ui.BaseTest
-import java.util.Calendar
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.Calendar
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -40,7 +40,8 @@ class SummaryModelTest : BaseTest() {
             ctx,
             distanceFormatter,
             routeProgress,
-            TWELVE_HOURS).distanceRemaining
+            TWELVE_HOURS
+        ).distanceRemaining
 
         assertEquals("100 m", result)
     }
@@ -57,7 +58,8 @@ class SummaryModelTest : BaseTest() {
             ctx,
             distanceFormatter,
             routeProgress,
-            TWELVE_HOURS).timeRemaining
+            TWELVE_HOURS
+        ).timeRemaining
 
         assertEquals("1 min ", result.toString())
     }
@@ -85,7 +87,8 @@ class SummaryModelTest : BaseTest() {
             ctx,
             distanceFormatter,
             routeProgress,
-            TWELVE_HOURS).arrivalTime
+            TWELVE_HOURS
+        ).arrivalTime
 
         assertEquals(expectedResult, result)
     }

@@ -16,11 +16,14 @@ internal class RouteRefreshCallback(
 
     constructor(directionsRoute: DirectionsRoute, legIndex: Int, refreshCallback: RefreshCallback) : this(RouteAnnotationUpdater(), directionsRoute, legIndex, refreshCallback) {}
 
-    override fun onResponse(call: Call<DirectionsRefreshResponse>, response: Response<DirectionsRefreshResponse>) {
+    override fun onResponse(
+        call: Call<DirectionsRefreshResponse>,
+        response: Response<DirectionsRefreshResponse>
+    ) {
         ifNonNull(
-                response.body(),
-                response.body()?.route(),
-                response.body()?.route()?.legs()
+            response.body(),
+            response.body()?.route(),
+            response.body()?.route()?.legs()
         ) { _, responseDirectionsRoute, _ ->
             refreshCallback.onRefresh(routeAnnotationUpdater.update(directionsRoute, responseDirectionsRoute, legIndex))
         } ?: refreshCallback.onError(RefreshError(response.message()))

@@ -68,19 +68,22 @@ import com.mapbox.navigation.ui.summary.SummaryBottomSheet
 import com.mapbox.navigation.ui.voice.NavigationSpeechPlayer
 import com.mapbox.navigation.ui.voice.SpeechPlayerProvider
 import com.mapbox.navigation.ui.voice.VoiceInstructionLoader
-import java.io.File
-import java.lang.ref.WeakReference
-import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_basic_navigation.*
 import okhttp3.Cache
 import timber.log.Timber
+import java.io.File
+import java.lang.ref.WeakReference
+import java.util.Locale
 
 /**
  * This fragment shows how to use the UI SDK standalone components
  * including the InstructionView and SummaryBottomSheet and voice to
  * build the turn-by-turn navigation experience with Navigation Core SDK.
  */
-class BasicNavigationFragment : Fragment(), OnMapReadyCallback, FeedbackBottomSheetListener,
+class BasicNavigationFragment :
+    Fragment(),
+    OnMapReadyCallback,
+    FeedbackBottomSheetListener,
     OnWayNameChangedListener {
 
     private val routeOverviewPadding by lazy { buildRouteOverviewPadding() }
@@ -219,7 +222,8 @@ class BasicNavigationFragment : Fragment(), OnMapReadyCallback, FeedbackBottomSh
             }
 
             if (shouldSimulateRoute()) {
-                mapboxNavigation.registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
+                mapboxNavigation
+                    .registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
                 mapboxReplayer.pushRealLocation(requireContext(), 0.0)
                 mapboxReplayer.play()
             }
@@ -311,7 +315,8 @@ class BasicNavigationFragment : Fragment(), OnMapReadyCallback, FeedbackBottomSh
                 summaryBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 showWayNameView()
                 navigationMapboxMap?.resetPadding()
-                navigationMapboxMap?.resetCameraPositionWith(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
+                navigationMapboxMap
+                    ?.resetCameraPositionWith(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
             }
         }
 
@@ -370,26 +375,26 @@ class BasicNavigationFragment : Fragment(), OnMapReadyCallback, FeedbackBottomSh
 
     private fun showLogoAndAttribution() {
         summaryBottomSheet.viewTreeObserver.addOnGlobalLayoutListener(object :
-            ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                navigationMapboxMap?.retrieveMap()?.uiSettings?.apply {
-                    val bottomMargin = summaryBottomSheet.measuredHeight
-                    setLogoMargins(
-                        logoMarginLeft,
-                        logoMarginTop,
-                        logoMarginRight,
-                        bottomMargin
-                    )
-                    setAttributionMargins(
-                        attributionMarginLeft,
-                        attributionMarginTop,
-                        attributionMarginRight,
-                        bottomMargin
-                    )
+                ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    navigationMapboxMap?.retrieveMap()?.uiSettings?.apply {
+                        val bottomMargin = summaryBottomSheet.measuredHeight
+                        setLogoMargins(
+                            logoMarginLeft,
+                            logoMarginTop,
+                            logoMarginRight,
+                            bottomMargin
+                        )
+                        setAttributionMargins(
+                            attributionMarginLeft,
+                            attributionMarginTop,
+                            attributionMarginRight,
+                            bottomMargin
+                        )
+                    }
+                    summaryBottomSheet.viewTreeObserver.removeOnGlobalLayoutListener(this)
                 }
-                summaryBottomSheet.viewTreeObserver.removeOnGlobalLayoutListener(this)
-            }
-        })
+            })
     }
 
     private fun initNavigation() {
@@ -458,13 +463,19 @@ class BasicNavigationFragment : Fragment(), OnMapReadyCallback, FeedbackBottomSh
 
     private fun buildRouteOverviewPadding(): IntArray {
         val leftRightPadding =
-            resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.route_overview_left_right_padding)
+            resources
+                .getDimension(com.mapbox.libnavigation.ui.R.dimen.route_overview_left_right_padding)
                 .toInt()
         val paddingBuffer =
-            resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.route_overview_buffer_padding)
+            resources
+                .getDimension(com.mapbox.libnavigation.ui.R.dimen.route_overview_buffer_padding)
                 .toInt()
-        val instructionHeight =
-            (resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.instruction_layout_height) + paddingBuffer).toInt()
+        val instructionHeight = (
+            resources.getDimension(
+                com.mapbox.libnavigation.ui.R.dimen.instruction_layout_height
+            ) + paddingBuffer
+            )
+            .toInt()
         val summaryHeight =
             resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.summary_bottomsheet_height)
                 .toInt()
@@ -524,7 +535,8 @@ class BasicNavigationFragment : Fragment(), OnMapReadyCallback, FeedbackBottomSh
                         navigationMapboxMap?.removeRoute()
                     }
 
-                    navigationMapboxMap?.removeOnWayNameChangedListener(this@BasicNavigationFragment)
+                    navigationMapboxMap
+                        ?.removeOnWayNameChangedListener(this@BasicNavigationFragment)
                     navigationMapboxMap?.updateWaynameQueryMap(false)
 
                     updateCameraOnNavigationStateChange(false)

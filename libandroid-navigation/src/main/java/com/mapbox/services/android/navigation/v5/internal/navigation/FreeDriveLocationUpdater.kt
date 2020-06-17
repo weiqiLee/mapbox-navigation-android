@@ -10,13 +10,13 @@ import com.mapbox.android.core.location.LocationEngineResult
 import com.mapbox.navigator.NavigationStatus
 import com.mapbox.services.android.navigation.v5.navigation.OfflineNavigator
 import com.mapbox.services.android.navigation.v5.navigation.OnOfflineTilesConfiguredCallback
+import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.Date
 import java.util.LinkedList
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import timber.log.Timber
 
 internal class FreeDriveLocationUpdater(
     private var locationEngine: LocationEngine,
@@ -45,24 +45,30 @@ internal class FreeDriveLocationUpdater(
     fun start() {
         if (future == null) {
             locationEngine.requestLocationUpdates(locationEngineRequest, callback, null)
-            future = executorService.scheduleAtFixedRate({
-                if (rawLocation != null) {
-                    // Pass the same lag as when in active guidance i.e. 1500 ms
-                    val enhancedLocation = getLocation(Date(), 1500, rawLocation)
-                    handler.post {
-                        navigationEventDispatcher.onEnhancedLocationUpdate(
-                            enhancedLocation
-                        )
+            future = executorService.scheduleAtFixedRate(
+                {
+                    if (rawLocation != null) {
+                        // Pass the same lag as when in active guidance i.e. 1500 ms
+                        val enhancedLocation = getLocation(Date(), 1500, rawLocation)
+                        handler.post {
+                            navigationEventDispatcher.onEnhancedLocationUpdate(
+                                enhancedLocation
+                            )
+                        }
                     }
-                }
-            }, 1500, 1000, TimeUnit.MILLISECONDS)
+                },
+                1500, 1000, TimeUnit.MILLISECONDS
+            )
         }
 
         if (electronicHorizonFuture == null) {
-            electronicHorizonFuture = executorService.scheduleAtFixedRate({
-                val request = electronicHorizonRequestBuilder.build(ElectronicHorizonRequestBuilder.Expansion._1D, cachedLocations)
-                mapboxNavigator.retrieveElectronicHorizon(request)
-            }, electronicHorizonParams.delay, electronicHorizonParams.interval, TimeUnit.MILLISECONDS)
+            electronicHorizonFuture = executorService.scheduleAtFixedRate(
+                {
+                    val request = electronicHorizonRequestBuilder.build(ElectronicHorizonRequestBuilder.Expansion._1D, cachedLocations)
+                    mapboxNavigator.retrieveElectronicHorizon(request)
+                },
+                electronicHorizonParams.delay, electronicHorizonParams.interval, TimeUnit.MILLISECONDS
+            )
         }
     }
 

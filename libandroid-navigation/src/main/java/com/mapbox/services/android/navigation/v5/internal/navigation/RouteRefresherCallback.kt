@@ -5,8 +5,8 @@ import com.mapbox.services.android.navigation.v5.navigation.DirectionsRouteType
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation
 import com.mapbox.services.android.navigation.v5.navigation.RefreshCallback
 import com.mapbox.services.android.navigation.v5.navigation.RefreshError
-import java.util.Date
 import timber.log.Timber
+import java.util.Date
 
 internal class RouteRefresherCallback(
     private val mapboxNavigation: MapboxNavigation,

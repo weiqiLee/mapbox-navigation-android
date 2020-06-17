@@ -3,9 +3,9 @@ package com.mapbox.services.android.navigation.v5.utils.time
 import com.mapbox.services.android.navigation.v5.navigation.NONE_SPECIFIED
 import com.mapbox.services.android.navigation.v5.navigation.TWELVE_HOURS
 import com.mapbox.services.android.navigation.v5.navigation.TWENTY_FOUR_HOURS
-import java.util.Calendar
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.util.Calendar
 
 class TimeFormatterTest {
 

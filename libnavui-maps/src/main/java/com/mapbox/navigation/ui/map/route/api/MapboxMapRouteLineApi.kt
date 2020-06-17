@@ -132,6 +132,6 @@ fun RouteLineState.withNewRoutes(directionsRoutes: List<DirectionsRoute>): Route
 fun RouteLineState.withNewOptions(
     block: RouteLineOptions.Builder.() -> Unit
 ): RouteLineState = MapboxMapRouteLineApi.getState(
-        this,
-        options.toBuilder().apply(block).build()
-    )
+    this,
+    options.toBuilder().apply(block).build()
+)

@@ -2,8 +2,8 @@ package com.mapbox.services.android.navigation.v5.navigation
 
 import io.mockk.mockk
 import io.mockk.verify
-import java.io.File
 import org.junit.Test
+import java.io.File
 
 class DownloadUpdateListenerTest {
 

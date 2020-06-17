@@ -1,6 +1,5 @@
 package com.mapbox.navigation.utils.internal
 
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
@@ -10,6 +9,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThat
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.coroutines.suspendCoroutine
 
 class ThreadControllerTest {
 

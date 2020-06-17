@@ -13,13 +13,13 @@ import com.mapbox.navigation.core.Rounding.INCREMENT_FIVE
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.util.Locale
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -224,10 +224,10 @@ class MapboxDistanceFormatterTest {
     @Test
     fun formatDistanceBelowZeroDistance() {
         val result = MapboxDistanceFormatter.Builder()
-                .withUnitType(IMPERIAL)
-                .withRoundingIncrement(INCREMENT_FIFTY)
-                .build(ctx)
-                .formatDistance(-0.1)
+            .withUnitType(IMPERIAL)
+            .withRoundingIncrement(INCREMENT_FIFTY)
+            .build(ctx)
+            .formatDistance(-0.1)
 
         assertEquals("50 ft", result.toString())
     }
@@ -236,10 +236,10 @@ class MapboxDistanceFormatterTest {
     @Test
     fun formatDistanceBelowZeroDistanceRoundingIncrementFive() {
         val result = MapboxDistanceFormatter.Builder()
-                .withUnitType(IMPERIAL)
-                .withRoundingIncrement(INCREMENT_FIVE)
-                .build(ctx)
-                .formatDistance(-0.1)
+            .withUnitType(IMPERIAL)
+            .withRoundingIncrement(INCREMENT_FIVE)
+            .build(ctx)
+            .formatDistance(-0.1)
 
         assertEquals("5 ft", result.toString())
     }
@@ -248,10 +248,10 @@ class MapboxDistanceFormatterTest {
     @Test
     fun formatDistanceUnitTypeUndefinedImperial() {
         val result = MapboxDistanceFormatter.Builder()
-                .withUnitType(UNDEFINED)
-                .withRoundingIncrement(INCREMENT_FIFTY)
-                .build(ctx)
-                .formatDistance(19312.1)
+            .withUnitType(UNDEFINED)
+            .withRoundingIncrement(INCREMENT_FIFTY)
+            .build(ctx)
+            .formatDistance(19312.1)
 
         assertEquals("12 mi", result.toString())
     }
@@ -260,10 +260,10 @@ class MapboxDistanceFormatterTest {
     @Test
     fun formatDistanceUnitTypeUndefinedMetric() {
         val result = MapboxDistanceFormatter.Builder()
-                .withUnitType(UNDEFINED)
-                .withRoundingIncrement(INCREMENT_FIFTY)
-                .build(ctx)
-                .formatDistance(19312.1)
+            .withUnitType(UNDEFINED)
+            .withRoundingIncrement(INCREMENT_FIFTY)
+            .build(ctx)
+            .formatDistance(19312.1)
 
         assertEquals("19 km", result.toString())
     }

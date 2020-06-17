@@ -4,7 +4,6 @@ import android.net.Uri
 import com.mapbox.api.directions.v5.DirectionsCriteria
 import com.mapbox.geojson.Point
 import com.mapbox.navigation.base.internal.route.RouteUrl
-import java.net.URLDecoder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -12,6 +11,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import java.net.URLDecoder
 
 // Test doesn't check if fields are valid! It checks URL, params in URL, where they locate and if has right query keys
 @RunWith(RobolectricTestRunner::class)
@@ -106,11 +106,12 @@ class RouteUrlTest {
     }
 
     private fun Uri.checkContain(string: String, decode: String? = "UTF-8") =
-        assertTrue(this.toString()
-            .let { url ->
-                decode?.let { decode -> URLDecoder.decode(url, decode) } ?: url
-            }
-            .contains(string)
+        assertTrue(
+            this.toString()
+                .let { url ->
+                    decode?.let { decode -> URLDecoder.decode(url, decode) } ?: url
+                }
+                .contains(string)
         )
 
     private fun setupRouteUrl(

@@ -1,13 +1,14 @@
 package com.mapbox.navigation.base.options
 
-import java.net.URISyntaxException
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.net.URISyntaxException
 
 class OnboardRouterOptionsTest {
 
-    private val validFilePath = """/data/user/0/com.mapbox.navigation.examples/files/Offline/api.mapbox.com/2020_02_02-03_00_00/tiles"""
+    private val validFilePath =
+        """/data/user/0/com.mapbox.navigation.examples/files/Offline/api.mapbox.com/2020_02_02-03_00_00/tiles"""
 
     @Test
     fun `filePath should build with defaults`() {

@@ -2,12 +2,12 @@ package com.mapbox.services.android.navigation.v5.navigation
 
 import io.mockk.every
 import io.mockk.mockk
-import java.util.HashMap
 import okhttp3.ResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.Response
+import java.util.HashMap
 
 class TarResponseErrorMapTest {
 

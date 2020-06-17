@@ -8,9 +8,9 @@ import com.mapbox.services.android.navigation.v5.navigation.OfflineNavigator
 import com.mapbox.services.android.navigation.v5.navigation.OnOfflineTilesConfiguredCallback
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.Test
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import org.junit.Test
 
 class FreeDriveLocationUpdaterTest {
 

@@ -59,21 +59,23 @@ import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import com.mapbox.navigation.ui.voice.NavigationSpeechPlayer
 import com.mapbox.navigation.ui.voice.SpeechPlayerProvider
 import com.mapbox.navigation.ui.voice.VoiceInstructionLoader
-import java.io.File
-import java.lang.ref.WeakReference
-import java.util.Date
-import java.util.Locale
 import kotlinx.android.synthetic.main.content_simple_mapbox_navigation.*
 import kotlinx.coroutines.channels.Channel
 import okhttp3.Cache
 import timber.log.Timber
+import java.io.File
+import java.lang.ref.WeakReference
+import java.util.Date
+import java.util.Locale
 
 /**
  * This activity shows debug points for raw(red) and
  * enhanced(blue) location updates.
  */
-class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
-        VoiceInstructionsObserver {
+class DebugMapboxNavigationKt :
+    AppCompatActivity(),
+    OnMapReadyCallback,
+    VoiceInstructionsObserver {
 
     companion object {
         private const val VOICE_INSTRUCTION_CACHE = "voice-instruction-cache"
@@ -101,10 +103,10 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
         findViewById<Button>(R.id.btn_send_user_feedback)?.let { button ->
             button.setOnClickListener {
                 MapboxNavigation.postUserFeedback(
-                        FeedbackEvent.GENERAL_ISSUE,
-                        "User feedback test at: ${Date().time}",
-                        FeedbackEvent.UI,
-                        null
+                    FeedbackEvent.GENERAL_ISSUE,
+                    "User feedback test at: ${Date().time}",
+                    FeedbackEvent.UI,
+                    null
                 )
             }
         }
@@ -113,10 +115,12 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
                 originalRoute?.let {
                     val routes = mapboxNavigation.getRoutes()
                     if (routes.isNotEmpty()) {
-                        mapboxNavigation.setRoutes(mapboxNavigation.getRoutes().toMutableList().apply {
-                            removeAt(0)
-                            add(0, it)
-                        })
+                        mapboxNavigation.setRoutes(
+                            mapboxNavigation.getRoutes().toMutableList().apply {
+                                removeAt(0)
+                                add(0, it)
+                            }
+                        )
                     } else {
                         mapboxNavigation.setRoutes(listOf(it))
                     }
@@ -139,14 +143,16 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
         localLocationEngine = LocationEngineProvider.getBestLocationEngine(applicationContext)
 
         val options =
-                MapboxNavigation.defaultNavigationOptions(this, Utils.getMapboxAccessToken(this))
+            MapboxNavigation.defaultNavigationOptions(this, Utils.getMapboxAccessToken(this))
 
         val newOptions = options.toBuilder()
-            .onboardRouterOptions(OnboardRouterOptions.Builder()
-                .tilesUri("https://api-routing-tiles-staging.tilestream.net")
-                .tilesVersion("2020_02_02-03_00_00")
-                .internalFilePath(this)
-                .build())
+            .onboardRouterOptions(
+                OnboardRouterOptions.Builder()
+                    .tilesUri("https://api-routing-tiles-staging.tilestream.net")
+                    .tilesVersion("2020_02_02-03_00_00")
+                    .internalFilePath(this)
+                    .build()
+            )
             .navigatorPredictionMillis(1000L)
             .build()
 
@@ -160,20 +166,20 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
         mapboxMap.addOnMapLongClickListener { click ->
             locationComponent?.lastKnownLocation?.let { location ->
                 mapboxNavigation.requestRoutes(
-                        RouteOptions.builder().applyDefaultParams()
-                                .accessToken(Utils.getMapboxAccessToken(applicationContext))
-                                .coordinates(location.toPoint(), null, click.toPoint())
-                                .alternatives(true)
-                                .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-                                .build(),
-                        routesReqCallback
+                    RouteOptions.builder().applyDefaultParams()
+                        .accessToken(Utils.getMapboxAccessToken(applicationContext))
+                        .coordinates(location.toPoint(), null, click.toPoint())
+                        .alternatives(true)
+                        .profile(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
+                        .build(),
+                    routesReqCallback
                 )
 
                 symbolManager?.deleteAll()
                 symbolManager?.create(
-                        SymbolOptions()
-                                .withIconImage("marker")
-                                .withGeometry(click.toPoint())
+                    SymbolOptions()
+                        .withIconImage("marker")
+                        .withGeometry(click.toPoint())
                 )
             }
             false
@@ -182,9 +188,9 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
         mapboxMap.setStyle(Style.MAPBOX_STREETS) { style ->
             locationComponent = mapboxMap.locationComponent.apply {
                 activateLocationComponent(
-                        LocationComponentActivationOptions.builder(this@DebugMapboxNavigationKt, style)
-                                .useDefaultLocationEngine(false)
-                                .build()
+                    LocationComponentActivationOptions.builder(this@DebugMapboxNavigationKt, style)
+                        .useDefaultLocationEngine(false)
+                        .build()
                 )
                 cameraMode = CameraMode.TRACKING
                 isLocationComponentEnabled = true
@@ -198,10 +204,12 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
             navigationMapboxMap.setCamera(DynamicCamera(mapboxMap))
             navigationMapboxMap.addProgressChangeListener(mapboxNavigation)
             navigationMapboxMap.setOnRouteSelectionChangeListener { route ->
-                mapboxNavigation.setRoutes(mapboxNavigation.getRoutes().toMutableList().apply {
-                    remove(route)
-                    add(0, route)
-                })
+                mapboxNavigation.setRoutes(
+                    mapboxNavigation.getRoutes().toMutableList().apply {
+                        remove(route)
+                        add(0, route)
+                    }
+                )
             }
 
             originalRoute?.let {
@@ -224,9 +232,9 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
     private fun initializeSpeechPlayer() {
         val cache = Cache(File(application.cacheDir, VOICE_INSTRUCTION_CACHE), 10 * 1024 * 1024)
         val voiceInstructionLoader =
-                VoiceInstructionLoader(application, Mapbox.getAccessToken(), cache)
+            VoiceInstructionLoader(application, Mapbox.getAccessToken(), cache)
         val speechPlayerProvider =
-                SpeechPlayerProvider(application, Locale.US.language, true, voiceInstructionLoader)
+            SpeechPlayerProvider(application, Locale.US.language, true, voiceInstructionLoader)
         speechPlayer = NavigationSpeechPlayer(speechPlayerProvider)
     }
 
@@ -246,14 +254,14 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
 
     private fun startLocationUpdates() {
         val request = LocationEngineRequest.Builder(1000L)
-                .setFastestInterval(500L)
-                .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
-                .build()
+            .setFastestInterval(500L)
+            .setPriority(LocationEngineRequest.PRIORITY_HIGH_ACCURACY)
+            .build()
         try {
             localLocationEngine.requestLocationUpdates(
-                    request,
-                    locationEngineCallback,
-                    Looper.getMainLooper()
+                request,
+                locationEngineCallback,
+                Looper.getMainLooper()
             )
             localLocationEngine.getLastLocation(locationEngineCallback)
         } catch (exception: SecurityException) {
@@ -279,7 +287,7 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
             navigationMapboxMap.drawRoutes(routes)
             if (routes.isEmpty()) {
                 Toast.makeText(this@DebugMapboxNavigationKt, "Empty routes", Toast.LENGTH_SHORT)
-                        .show()
+                    .show()
             } else {
                 if (mapboxNavigation.getTripSessionState() == TripSessionState.STARTED) {
                     initDynamicCamera(routes[0])
@@ -361,7 +369,9 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
         mapboxNavigation.detachFasterRouteObserver()
         stopLocationUpdates()
 
-        if (mapboxNavigation.getRoutes().isEmpty() && mapboxNavigation.getTripSessionState() == TripSessionState.STARTED) {
+        if (mapboxNavigation.getRoutes().isEmpty() &&
+            mapboxNavigation.getTripSessionState() == TripSessionState.STARTED
+        ) {
             // use this to kill the service and hide the notification when going into the background in the Free Drive state,
             // but also ensure to restart Free Drive when coming back from background by using the channel
             mapboxNavigation.unregisterVoiceInstructionsObserver(this)
@@ -411,7 +421,7 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
     }
 
     private class MyLocationEngineCallback(activity: DebugMapboxNavigationKt) :
-            LocationEngineCallback<LocationEngineResult> {
+        LocationEngineCallback<LocationEngineResult> {
 
         private val activityRef = WeakReference(activity)
 
@@ -430,9 +440,9 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
     private fun getMapboxNavigation(options: NavigationOptions): MapboxNavigation {
         return if (shouldSimulateRoute()) {
             return MapboxNavigation(
-                    applicationContext,
-                    navigationOptions = options,
-                    locationEngine = ReplayLocationEngine(mapboxReplayer)
+                applicationContext,
+                navigationOptions = options,
+                locationEngine = ReplayLocationEngine(mapboxReplayer)
             ).apply {
                 registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
                 mapboxReplayer.pushRealLocation(this@DebugMapboxNavigationKt, 0.0)
@@ -440,15 +450,15 @@ class DebugMapboxNavigationKt : AppCompatActivity(), OnMapReadyCallback,
             }
         } else {
             MapboxNavigation(
-                    applicationContext,
-                    navigationOptions = options
+                applicationContext,
+                navigationOptions = options
             )
         }
     }
 
     private fun shouldSimulateRoute(): Boolean {
         return PreferenceManager.getDefaultSharedPreferences(this.applicationContext)
-                .getBoolean(this.getString(R.string.simulate_route_key), false)
+            .getBoolean(this.getString(R.string.simulate_route_key), false)
     }
 
     private fun updateCameraOnNavigationStateChange(

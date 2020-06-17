@@ -44,8 +44,8 @@ import com.mapbox.navigation.examples.utils.extensions.toPoint
 import com.mapbox.navigation.ui.camera.NavigationCamera
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import com.mapbox.navigation.ui.summary.SummaryBottomSheet
-import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_summary_bottom_sheet.*
+import java.lang.ref.WeakReference
 
 /**
  * This activity shows how to integrate the
@@ -150,12 +150,17 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
             when (directionRoute) {
                 null -> {
                     if (shouldSimulateRoute()) {
-                        mapboxNavigation?.registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
+                        mapboxNavigation
+                            ?.registerRouteProgressObserver(ReplayProgressObserver(mapboxReplayer))
                         mapboxReplayer.pushRealLocation(this, 0.0)
                         mapboxReplayer.play()
                     }
                     mapboxNavigation?.locationEngine?.getLastLocation(locationListenerCallback)
-                    Snackbar.make(mapView, R.string.msg_long_press_map_to_place_waypoint, LENGTH_SHORT)
+                    Snackbar.make(
+                        mapView,
+                        R.string.msg_long_press_map_to_place_waypoint,
+                        LENGTH_SHORT
+                    )
                         .show()
                 }
                 else -> restoreNavigation()
@@ -239,7 +244,8 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
         recenterBtn.addOnClickListener {
             recenterBtn.hide()
             navigationMapboxMap?.resetPadding()
-            navigationMapboxMap?.resetCameraPositionWith(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
+            navigationMapboxMap
+                ?.resetCameraPositionWith(NavigationCamera.NAVIGATION_TRACKING_MODE_GPS)
         }
 
         cancelBtn.setOnClickListener {
@@ -250,15 +256,25 @@ class SummaryBottomSheetActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun buildRouteOverviewPadding(): IntArray {
         val leftRightPadding =
-            resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.route_overview_left_right_padding)
+            resources
+                .getDimension(
+                    com.mapbox.libnavigation.ui.R.dimen.route_overview_left_right_padding
+                )
                 .toInt()
         val paddingBuffer =
-            resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.route_overview_buffer_padding)
+            resources
+                .getDimension(com.mapbox.libnavigation.ui.R.dimen.route_overview_buffer_padding)
                 .toInt()
         val instructionHeight =
-            (resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.instruction_layout_height) + paddingBuffer).toInt()
+            (
+                resources
+                    .getDimension(
+                        com.mapbox.libnavigation.ui.R.dimen.instruction_layout_height
+                    ) + paddingBuffer
+                ).toInt()
         val summaryHeight =
-            resources.getDimension(com.mapbox.libnavigation.ui.R.dimen.summary_bottomsheet_height)
+            resources
+                .getDimension(com.mapbox.libnavigation.ui.R.dimen.summary_bottomsheet_height)
                 .toInt()
         return intArrayOf(leftRightPadding, instructionHeight, leftRightPadding, summaryHeight)
     }

@@ -121,7 +121,8 @@ class MapboxDistanceFormatter private constructor(
                 locale = localeToUse,
                 unitType = unitTypeToUse,
                 roundingIncrement = roundingIncrement,
-                builder = this)
+                builder = this
+            )
         }
     }
 

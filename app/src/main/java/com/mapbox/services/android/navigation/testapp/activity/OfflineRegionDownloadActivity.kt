@@ -43,7 +43,9 @@ import kotlinx.android.synthetic.main.activity_offline_region_download.*
 import org.json.JSONObject
 import timber.log.Timber
 
-class OfflineRegionDownloadActivity : AppCompatActivity(), RouteTileDownloadListener,
+class OfflineRegionDownloadActivity :
+    AppCompatActivity(),
+    RouteTileDownloadListener,
     OnOfflineTilesRemovedCallback {
 
     companion object {
@@ -100,10 +102,10 @@ class OfflineRegionDownloadActivity : AppCompatActivity(), RouteTileDownloadList
         override fun onStatusChanged(offlineRegionStatus: OfflineRegionStatus?) {
             offlineRegionStatus?.let { status ->
                 Timber.d(
-                        "%s/%s resources; %s bytes downloaded.",
-                        status.completedResourceCount,
-                        status.requiredResourceCount,
-                        status.completedResourceSize
+                    "%s/%s resources; %s bytes downloaded.",
+                    status.completedResourceCount,
+                    status.requiredResourceCount,
+                    status.completedResourceSize
                 )
                 if (status.isComplete && !isDownloadCompleted) {
                     isDownloadCompleted = true
@@ -131,7 +133,8 @@ class OfflineRegionDownloadActivity : AppCompatActivity(), RouteTileDownloadList
     private fun setupSpinner() {
         val token = Mapbox.getAccessToken() ?: return
         mapboxOfflineRouter
-            .fetchAvailableTileVersions(token,
+            .fetchAvailableTileVersions(
+                token,
                 object : OnTileVersionsFoundCallback {
                     override fun onVersionsFound(availableVersions: List<String>) {
                         setupSpinner(availableVersions)
@@ -208,8 +211,8 @@ class OfflineRegionDownloadActivity : AppCompatActivity(), RouteTileDownloadList
         }
 
         if (ContextCompat.checkSelfPermission(
-                this, WRITE_EXTERNAL_STORAGE
-            ) != PERMISSION_GRANTED
+            this, WRITE_EXTERNAL_STORAGE
+        ) != PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(this, arrayOf(WRITE_EXTERNAL_STORAGE), 1)
         } else {
@@ -254,7 +257,22 @@ class OfflineRegionDownloadActivity : AppCompatActivity(), RouteTileDownloadList
         )
         // TODO Testing downloading a Geometry
         val geometry: Geometry = GeometryGeoJson.fromJson(
-            "{\"type\":\"Polygon\",\"coordinates\":[[[-77.152533,39.085537],[-77.152533,39.083038],[-77.150031,39.083038],[-77.150031,39.085537],[-77.147529,39.085537],[-77.147529,39.088039],[-77.147529,39.090538],[-77.150031,39.090538],[-77.150031,39.093037],[-77.150031,39.095539],[-77.150031,39.098038],[-77.150031,39.100540],[-77.150031,39.103039],[-77.152533,39.103039],[-77.152533,39.105537],[-77.155028,39.105537],[-77.155028,39.108040],[-77.155028,39.110538],[-77.157531,39.110538],[-77.157531,39.113037],[-77.160033,39.113037],[-77.160033,39.115536],[-77.162528,39.115540],[-77.162528,39.118038],[-77.165030,39.118038],[-77.165030,39.115536],[-77.167533,39.115536],[-77.167533,39.113037],[-77.167533,39.110538],[-77.165030,39.110538],[-77.165030,39.108040],[-77.162536,39.108036],[-77.162536,39.105537],[-77.162536,39.103039],[-77.160033,39.103039],[-77.160033,39.100540],[-77.157531,39.100536],[-77.157531,39.098038],[-77.157531,39.095535],[-77.157531,39.093037],[-77.157531,39.090538],[-77.157531,39.088039],[-77.155036,39.088036],[-77.155036,39.085537],[-77.152533,39.085537]]]}"
+            "{\"type\":\"Polygon\",\"coordinates\":[[[-77.152533,39.085537]," +
+                "[-77.152533,39.083038],[-77.150031,39.083038],[-77.150031,39.085537]," +
+                "[-77.147529,39.085537],[-77.147529,39.088039],[-77.147529,39.090538]," +
+                "[-77.150031,39.090538],[-77.150031,39.093037],[-77.150031,39.095539]," +
+                "[-77.150031,39.098038],[-77.150031,39.100540],[-77.150031,39.103039]," +
+                "[-77.152533,39.103039],[-77.152533,39.105537],[-77.155028,39.105537]," +
+                "[-77.155028,39.108040],[-77.155028,39.110538],[-77.157531,39.110538]," +
+                "[-77.157531,39.113037],[-77.160033,39.113037],[-77.160033,39.115536]," +
+                "[-77.162528,39.115540],[-77.162528,39.118038],[-77.165030,39.118038]," +
+                "[-77.165030,39.115536],[-77.167533,39.115536],[-77.167533,39.113037]," +
+                "[-77.167533,39.110538],[-77.165030,39.110538],[-77.165030,39.108040]," +
+                "[-77.162536,39.108036],[-77.162536,39.105537],[-77.162536,39.103039]," +
+                "[-77.160033,39.103039],[-77.160033,39.100540],[-77.157531,39.100536]," +
+                "[-77.157531,39.098038],[-77.157531,39.095535],[-77.157531,39.093037]," +
+                "[-77.157531,39.090538],[-77.157531,39.088039],[-77.155036,39.088036]," +
+                "[-77.155036,39.085537],[-77.152533,39.085537]]]}"
         )
         // TODO Hardcoding OfflineRegionDefinitionProvider values for testing / debugging purposes
         val minZoom = 11.0
@@ -262,7 +280,8 @@ class OfflineRegionDownloadActivity : AppCompatActivity(), RouteTileDownloadList
         // val minZoom: Double = mapboxMap.cameraPosition.zoom
         // val maxZoom: Double = mapboxMap.maxZoomLevel
         val pixelRatio: Float = this.resources.displayMetrics.density
-        val definition = OfflineTilePyramidRegionDefinition(styleUrl, bounds, minZoom, maxZoom, pixelRatio)
+        val definition =
+            OfflineTilePyramidRegionDefinition(styleUrl, bounds, minZoom, maxZoom, pixelRatio)
         // TODO Testing downloading a Geometry using OfflineGeometryRegionDefinition as definition
         // val definition: OfflineGeometryRegionDefinition = OfflineGeometryRegionDefinition(
         //        styleUrl, geometry, minZoom, maxZoom, pixelRatio)

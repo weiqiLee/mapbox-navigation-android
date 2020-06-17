@@ -20,8 +20,8 @@ class RouteAnnotationUpdater {
                 }
             }
             return oldRoute.toBuilder()
-                    .legs(legs)
-                    .build()
+                .legs(legs)
+                .build()
         }
         return oldRoute
     }

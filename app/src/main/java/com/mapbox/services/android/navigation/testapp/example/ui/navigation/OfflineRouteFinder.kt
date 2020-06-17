@@ -38,17 +38,20 @@ class OfflineRouteFinder(
             return
         }
 
-        offlineRouter.configure(version, object : OnOfflineTilesConfiguredCallback {
-            override fun onConfigured(numberOfTiles: Int) {
-                Timber.d("Offline tiles configured: $numberOfTiles")
-                isConfigured = true
-            }
+        offlineRouter.configure(
+            version,
+            object : OnOfflineTilesConfiguredCallback {
+                override fun onConfigured(numberOfTiles: Int) {
+                    Timber.d("Offline tiles configured: $numberOfTiles")
+                    isConfigured = true
+                }
 
-            override fun onConfigurationError(error: OfflineError) {
-                Timber.d("Offline tiles configuration error: {${error.message}}")
-                isConfigured = false
+                override fun onConfigurationError(error: OfflineError) {
+                    Timber.d("Offline tiles configuration error: {${error.message}}")
+                    isConfigured = false
+                }
             }
-        })
+        )
     }
 
     fun findRoute(location: Location, destination: Point) {
@@ -67,15 +70,18 @@ class OfflineRouteFinder(
 
     private fun findOfflineRoute(location: Location, destination: Point) {
         val offlineRoute = buildOfflineRoute(location, destination)
-        offlineRouter.findRoute(offlineRoute, object : OnOfflineRouteFoundCallback {
-            override fun onRouteFound(route: DirectionsRoute) {
-                callback.onRoutesFound(listOf(route))
-            }
+        offlineRouter.findRoute(
+            offlineRoute,
+            object : OnOfflineRouteFoundCallback {
+                override fun onRouteFound(route: DirectionsRoute) {
+                    callback.onRoutesFound(listOf(route))
+                }
 
-            override fun onError(error: OfflineError) {
-                callback.onError(error.message)
+                override fun onError(error: OfflineError) {
+                    callback.onError(error.message)
+                }
             }
-        })
+        )
     }
 
     private fun buildOfflineRoute(location: Location, destination: Point): OfflineRoute {

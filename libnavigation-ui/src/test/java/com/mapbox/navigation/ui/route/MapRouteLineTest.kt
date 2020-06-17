@@ -29,7 +29,6 @@ import com.mapbox.navigation.ui.internal.route.RouteConstants.WAYPOINT_LAYER_ID
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.Scanner
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -38,6 +37,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.robolectric.RobolectricTestRunner
+import java.util.Scanner
 
 @RunWith(RobolectricTestRunner::class)
 class MapRouteLineTest {
@@ -1028,11 +1028,15 @@ class MapRouteLineTest {
             callback
         )
 
-        verify { callback.onInitialized(RouteLineLayerIds(
-            PRIMARY_ROUTE_TRAFFIC_LAYER_ID,
-            PRIMARY_ROUTE_LAYER_ID,
-            ALTERNATIVE_ROUTE_LAYER_ID
-        )) }
+        verify {
+            callback.onInitialized(
+                RouteLineLayerIds(
+                    PRIMARY_ROUTE_TRAFFIC_LAYER_ID,
+                    PRIMARY_ROUTE_LAYER_ID,
+                    ALTERNATIVE_ROUTE_LAYER_ID
+                )
+            )
+        }
     }
 
     private fun getMultilegRoute(): DirectionsRoute {

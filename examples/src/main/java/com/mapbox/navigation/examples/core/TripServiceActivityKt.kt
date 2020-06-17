@@ -66,7 +66,9 @@ class TripServiceActivityKt : AppCompatActivity(), OnMapReadyCallback {
                         mapboxTripService.startService()
                         changeText()
                         toggleNotification.text = "Stop"
-                        monitorNotificationActionButton(MapboxTripNotification.notificationActionButtonChannel)
+                        monitorNotificationActionButton(
+                            MapboxTripNotification.notificationActionButtonChannel
+                        )
                     }
                 }
             }
@@ -99,7 +101,8 @@ class TripServiceActivityKt : AppCompatActivity(), OnMapReadyCallback {
         )
 
         // If you want to use Mapbox provided Service do this
-        mapboxTripService = MapboxTripService(applicationContext, mapboxTripNotification, MapboxLogger)
+        mapboxTripService =
+            MapboxTripService(applicationContext, mapboxTripNotification, MapboxLogger)
 
         /*
         // else do this
@@ -120,11 +123,14 @@ class TripServiceActivityKt : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun monitorNotificationActionButton(channel: ReceiveChannel<NotificationAction>) {
-        mainJobController.scope.monitorChannelWithException(channel, { notificationAction ->
-            when (notificationAction) {
-                NotificationAction.END_NAVIGATION -> stopService()
+        mainJobController.scope.monitorChannelWithException(
+            channel,
+            { notificationAction ->
+                when (notificationAction) {
+                    NotificationAction.END_NAVIGATION -> stopService()
+                }
             }
-        })
+        )
     }
 
     private fun stopService() {

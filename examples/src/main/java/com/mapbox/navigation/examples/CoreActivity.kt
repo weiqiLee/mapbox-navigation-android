@@ -31,7 +31,7 @@ import com.mapbox.navigation.examples.core.SimpleMapboxNavigationKt
 import com.mapbox.navigation.examples.core.SummaryBottomSheetActivity
 import com.mapbox.navigation.examples.core.TripServiceActivityKt
 import com.mapbox.navigation.examples.core.TripSessionActivityKt
-import kotlinx.android.synthetic.main.activity_core.*
+import kotlinx.android.synthetic.main.activity_core.coreRecycler
 
 class CoreActivity : AppCompatActivity() {
 
@@ -121,9 +121,9 @@ class CoreActivity : AppCompatActivity() {
                 BasicNavigationFragmentActivity::class.java
             ),
             SampleItem(
-                    getString(R.string.title_basic_navigation_sdk_only_kotlin),
-                    getString(R.string.description_basic_navigation_sdk_only_kotlin),
-                    BasicNavSdkOnlyActivity::class.java
+                getString(R.string.title_basic_navigation_sdk_only_kotlin),
+                getString(R.string.description_basic_navigation_sdk_only_kotlin),
+                BasicNavSdkOnlyActivity::class.java
             ),
             SampleItem(
                 getString(R.string.title_free_drive_kotlin),

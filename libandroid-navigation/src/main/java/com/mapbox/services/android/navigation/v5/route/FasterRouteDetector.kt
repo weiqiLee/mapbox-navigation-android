@@ -111,10 +111,10 @@ class FasterRouteDetector : FasterRoute() {
     }
 
     private fun validRouteDurationRemaining(routeProgress: RouteProgress) =
-            // Total route duration remaining in seconds
-            ifNonNull(routeProgress.durationRemaining()) { durationRemaining ->
-                durationRemaining.toInt() > VALID_ROUTE_DURATION_REMAINING
-            } ?: false
+        // Total route duration remaining in seconds
+        ifNonNull(routeProgress.durationRemaining()) { durationRemaining ->
+            durationRemaining.toInt() > VALID_ROUTE_DURATION_REMAINING
+        } ?: false
 
     private fun validStepDurationRemaining(routeProgress: RouteProgress) =
         // Current step duration remaining in seconds

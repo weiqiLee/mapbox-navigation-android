@@ -26,9 +26,9 @@ import com.mapbox.services.android.navigation.v5.milestone.Milestone
 import com.mapbox.services.android.navigation.v5.navigation.MapboxNavigation
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress
 import com.mapbox.services.android.navigation.v5.utils.extensions.ifNonNull
+import okhttp3.Cache
 import java.io.File
 import java.util.Locale.US
-import okhttp3.Cache
 
 private const val UPDATE_INTERVAL_IN_MILLISECONDS: Long = 1000
 private const val FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS: Long = 500
@@ -177,7 +177,8 @@ class ExampleViewModel(application: Application) : AndroidViewModel(application)
         return normalizeForTraffic(
             PreferenceManager.getDefaultSharedPreferences(context)
                 .getString(
-                    context.getString(R.string.route_profile_key), context.getString(
+                    context.getString(R.string.route_profile_key),
+                    context.getString(
                         R.string
                             .default_route_profile
                     )

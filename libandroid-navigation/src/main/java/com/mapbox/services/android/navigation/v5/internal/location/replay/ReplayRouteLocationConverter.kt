@@ -110,7 +110,8 @@ internal class ReplayRouteLocationConverter(
                 legs[currentLeg]?.steps()?.let { steps ->
                     steps[currentStep].geometry()
                 }
-            } ?: "", Constants.PRECISION_6
+            } ?: "",
+            Constants.PRECISION_6
         )
         stepPoints.addAll(sliceRoute(line))
         increaseIndex()

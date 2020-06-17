@@ -7,12 +7,12 @@ import com.mapbox.services.android.navigation.v5.utils.extensions.inferDeviceLoc
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import java.io.UnsupportedEncodingException
-import java.net.URLDecoder
-import java.util.Locale
 import org.junit.Assert.assertTrue
 import org.junit.BeforeClass
 import org.junit.Test
+import java.io.UnsupportedEncodingException
+import java.net.URLDecoder
+import java.util.Locale
 
 class OfflineRouteTest {
 
