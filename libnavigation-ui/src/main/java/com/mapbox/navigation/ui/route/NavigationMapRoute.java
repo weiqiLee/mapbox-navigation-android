@@ -534,4 +534,8 @@ public class NavigationMapRoute implements LifecycleObserver {
       );
     }
   }
+
+  public MapRouteLine getRouteLine() {
+    return this.routeLine;
+  }
 }

@@ -1,9 +1,12 @@
 package com.mapbox.navigation.examples.core
 
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_SHORT
@@ -20,9 +23,13 @@ import com.mapbox.mapboxsdk.location.modes.RenderMode
 import com.mapbox.mapboxsdk.maps.MapboxMap
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback
 import com.mapbox.mapboxsdk.maps.Style
+import com.mapbox.mapboxsdk.style.expressions.Expression
+import com.mapbox.mapboxsdk.style.layers.LineLayer
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory
 import com.mapbox.navigation.base.internal.extensions.applyDefaultParams
 import com.mapbox.navigation.base.internal.extensions.coordinates
 import com.mapbox.navigation.base.trip.model.RouteProgress
+import com.mapbox.navigation.base.trip.model.RouteProgressState
 import com.mapbox.navigation.core.MapboxNavigation
 import com.mapbox.navigation.core.directions.session.RoutesRequestCallback
 import com.mapbox.navigation.core.replay.MapboxReplayer
@@ -37,11 +44,20 @@ import com.mapbox.navigation.examples.utils.Utils.PRIMARY_ROUTE_BUNDLE_KEY
 import com.mapbox.navigation.examples.utils.Utils.getRouteFromBundle
 import com.mapbox.navigation.examples.utils.extensions.toPoint
 import com.mapbox.navigation.ui.camera.NavigationCamera
+import com.mapbox.navigation.ui.internal.route.RouteConstants
+import com.mapbox.navigation.ui.internal.route.RouteConstants.ROUTE_LINE_VANISH_ANIMATION_DURATION
 import com.mapbox.navigation.ui.map.NavigationMapboxMap
 import com.mapbox.navigation.ui.map.NavigationMapboxMapInstanceState
+import com.mapbox.navigation.ui.puck.PuckDrawableSupplier
+import com.mapbox.navigation.utils.internal.ThreadController
 import java.lang.ref.WeakReference
 import kotlinx.android.synthetic.main.activity_basic_navigation_layout.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.math.BigDecimal
+
 
 /**
  * This activity shows how to set up a basic turn-by-turn
@@ -61,6 +77,7 @@ open class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
     private var mapInstanceState: NavigationMapboxMapInstanceState? = null
     private val mapboxReplayer = MapboxReplayer()
     private var directionRoute: DirectionsRoute? = null
+    lateinit var style: Style
 
     private val mapStyles = listOf(
         Style.MAPBOX_STREETS,
@@ -96,8 +113,11 @@ open class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(mapboxMap: MapboxMap) {
         mapboxMap.setStyle(Style.MAPBOX_STREETS) {
+            this.style = it
             mapboxMap.moveCamera(CameraUpdateFactory.zoomTo(15.0))
-            navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap, this, true)
+            navigationMapboxMap = NavigationMapboxMap(mapView, mapboxMap, this, true).also {
+                it.setPuckDrawableSupplier(CustomPuckDrawableSupplier())
+            }
             mapInstanceState?.let { state ->
                 navigationMapboxMap?.restoreFrom(state)
             }
@@ -180,6 +200,7 @@ open class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
         startNavigation.setOnClickListener {
             updateCameraOnNavigationStateChange(true)
             navigationMapboxMap?.addProgressChangeListener(mapboxNavigation!!)
+//mapboxNavigation?.registerRouteProgressObserver(progChangeListener)
             if (mapboxNavigation?.getRoutes()?.isNotEmpty() == true) {
                 navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             }
@@ -189,7 +210,8 @@ open class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         fabToggleStyle.setOnClickListener {
-            navigationMapboxMap?.retrieveMap()?.setStyle(mapStyles.shuffled().first())
+            //navigationMapboxMap?.retrieveMap()?.setStyle(mapStyles.shuffled().first())
+            foobar()
         }
     }
 
@@ -324,6 +346,157 @@ open class BasicNavigationActivity : AppCompatActivity(), OnMapReadyCallback {
             navigationMapboxMap?.startCamera(mapboxNavigation?.getRoutes()!![0])
             updateCameraOnNavigationStateChange(true)
             mapboxNavigation?.startTripSession()
+        }
+    }
+
+    class CustomPuckDrawableSupplier : PuckDrawableSupplier {
+        override fun getPuckDrawable(routeProgressState: RouteProgressState): Int = when (routeProgressState) {
+            RouteProgressState.ROUTE_INVALID -> R.drawable.transparent_puck
+            RouteProgressState.ROUTE_INITIALIZED -> R.drawable.transparent_puck
+            RouteProgressState.LOCATION_TRACKING -> R.drawable.transparent_puck
+            RouteProgressState.ROUTE_COMPLETE -> R.drawable.transparent_puck
+            RouteProgressState.LOCATION_STALE -> R.drawable.transparent_puck
+            else -> R.drawable.transparent_puck
+        }
+    }
+
+    //0.0033f
+    val percentDistanceDelta = 0.0005f
+    var step = 0.0001f
+    fun foobar() {
+        val expression = navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.getExpressionAtOffset(step)
+        navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.hideShieldLineAtOffset(step)
+        navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.hideRouteLineAtOffset(step)
+        navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.decorateRouteLine(expression)
+        Timber.e("*** $expression")
+        step += percentDistanceDelta
+    }
+
+    var loopCounter = 0
+    fun foobar1() {
+        ThreadController.getMainScopeAndRootJob().scope.launch {
+            while (loopCounter <= 5000) {
+                step += percentDistanceDelta
+                val expression =
+                    navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.getExpressionAtOffset(step)
+                navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.hideShieldLineAtOffset(step)
+                navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.hideRouteLineAtOffset(step)
+                navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.decorateRouteLine(expression)
+                Timber.e("*** $expression")
+                delay(10)
+                loopCounter += 100
+            }
+        }
+    }
+
+    fun foobar2() {
+        val values = listOf<Float>(
+            0.00000430546f,
+            0.00000940370f,
+            0.00001646094f,
+            0.0000254688f,
+            0.00003750753f,
+            0.0000505566f,
+            0.00006551547f,
+            0.00008236626f,
+            0.00010108911f,
+            0.00012362252f,
+            0.00014618455f,
+            0.00017054232f,
+            0.0001966668f,
+            0.00022452633f,
+            0.00025685912f,
+            0.00028823732f,
+            0.00032124203f,
+            0.00035583344f,
+            0.00039533028f,
+            0.00043310353f,
+            0.00047232962f,
+            0.00051296223f,
+            0.00055495277f,
+            0.0006022497f,
+            0.00064691517f,
+            0.00069277803f,
+            0.0007397844f,
+            0.0007878776f,
+            0.0008415146f,
+            0.00089169346f,
+            0.0009427772f,
+            0.000994706f,
+            0.0010522455f,
+            0.0011057386f,
+            0.0011598817f,
+            0.0012146092f,
+            0.0012698574f,
+            0.0013306432f,
+            0.0013867646f,
+            0.0014432003f,
+            0.0014998824f,
+            0.0015619204f,
+            0.0016188998f,
+            0.001675917f,
+            0.0017329033f,
+            0.00178979f,
+            0.0018516561f,
+            0.0019081166f,
+            0.0019642694f,
+            0.0020200468f,
+            0.002075382f,
+            0.0021351667f,
+            0.002189365f,
+            0.0022429198f,
+            0.0022957667f,
+            0.0023525357f,
+            0.0024036993f,
+            0.0024539623f,
+            0.0025032659f,
+            0.0025515507f,
+            0.0026029947f,
+            0.0026489645f,
+            0.0026937404f,
+            0.0027372707f,
+            0.002779503f,
+            0.0028240338f,
+            0.00286339f,
+            0.002901297f,
+            0.0029377104f,
+            0.002975678f,
+            0.0030088292f,
+            0.0030403566f,
+            0.003070224f,
+            0.0030983964f,
+            0.0031271551f,
+            0.003151675f,
+            0.0031744011f,
+            0.0031953072f,
+            0.0032160087f,
+            0.0032330304f,
+            0.0032481623f,
+            0.0032613855f,
+            0.0032726845f,
+            0.0032828005f,
+            0.0032900353f,
+            0.0032953124f,
+            0.0032986242f,
+            0.0032999674f)
+        ThreadController.getMainScopeAndRootJob().scope.launch {
+            for (x in values) {
+                val stepToUse = x.toBigDecimal().setScale(4, BigDecimal.ROUND_DOWN).toFloat()
+
+                if (stepToUse  == 0f) {
+                    Timber.e("*** skipping ${x.toBigDecimal()}")
+                    continue
+                }
+
+                val expression =
+                    navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.getExpressionAtOffset(stepToUse)
+                navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.hideShieldLineAtOffset(stepToUse)
+                navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.hideRouteLineAtOffset(stepToUse)
+                navigationMapboxMap?.retrieveMapRoute()?.routeLine!!.decorateRouteLine(expression)
+                Timber.e("*** $expression")
+                delay(100)
+            }
+            Timber.e("*** finished")
         }
     }
 }

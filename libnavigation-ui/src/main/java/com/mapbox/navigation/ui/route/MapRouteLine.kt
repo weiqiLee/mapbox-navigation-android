@@ -50,6 +50,7 @@ import com.mapbox.navigation.ui.route.MapRouteLine.MapRouteLineSupport.getStyled
 import com.mapbox.navigation.utils.internal.ThreadController
 import com.mapbox.navigation.utils.internal.parallelMap
 import com.mapbox.turf.TurfMeasurement
+import java.math.BigDecimal
 
 /**
  * Responsible for the appearance of the route lines on the map. This class applies styling
@@ -68,7 +69,7 @@ import com.mapbox.turf.TurfMeasurement
  * @param vanishPoint the percentage of the route line from the origin that should not be visible
  * @param routeLineInitializedCallback called to indicate that the route line layer has been added to the current style
  */
-internal class MapRouteLine(
+class MapRouteLine(
     context: Context,
     private val style: Style,
     @androidx.annotation.StyleRes styleRes: Int,
@@ -700,7 +701,7 @@ internal class MapRouteLine(
             }
         }.map {
             Expression.stop(
-                it.offset,
+                it.offset.toBigDecimal().setScale(6, BigDecimal.ROUND_DOWN),
                 Expression.color(it.segmentColor)
             )
         }
@@ -798,7 +799,7 @@ internal class MapRouteLine(
             Expression.lineProgress(),
             Expression.color(routeLineShieldTraveledColor),
             Expression.stop(
-                offset,
+                offset.toBigDecimal().setScale(6, BigDecimal.ROUND_DOWN),
                 Expression.color(routeShieldColor)
             )
         )
@@ -818,7 +819,7 @@ internal class MapRouteLine(
             Expression.lineProgress(),
             Expression.color(routeLineTraveledColor),
             Expression.stop(
-                offset,
+                offset.toBigDecimal().setScale(6, BigDecimal.ROUND_DOWN),
                 Expression.color(routeDefaultColor)
             )
         )
@@ -1142,10 +1143,10 @@ internal class MapRouteLine(
  * @param featureCollection a FeatureCollection created using the route
  * @param lineString a LineString derived from the route's geometry.
  */
-internal data class RouteFeatureData(
+data class RouteFeatureData(
     val route: DirectionsRoute,
     val featureCollection: FeatureCollection,
     val lineString: LineString
 )
 
-internal data class RouteLineExpressionData(val offset: Float, val segmentColor: Int)
+data class RouteLineExpressionData(val offset: Float, val segmentColor: Int)
