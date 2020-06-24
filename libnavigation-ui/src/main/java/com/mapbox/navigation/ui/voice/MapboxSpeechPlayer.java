@@ -46,11 +46,11 @@ class MapboxSpeechPlayer implements SpeechPlayer {
   /**
    * Construct an instance of {@link MapboxSpeechPlayer}
    *
-   * @param context                to setup the caches
+   * @param context to setup the caches
    * @param voiceInstructionLoader voice instruction loader
    */
   MapboxSpeechPlayer(Context context, @NonNull VoiceListener voiceListener,
-                     VoiceInstructionLoader voiceInstructionLoader) {
+      VoiceInstructionLoader voiceInstructionLoader) {
     this.voiceListener = voiceListener;
     this.voiceInstructionLoader = voiceInstructionLoader;
     setupCaches(context);
@@ -133,10 +133,12 @@ class MapboxSpeechPlayer implements SpeechPlayer {
       return;
     }
 
+    Timber.d("Issue3216 instruction=%s", instruction);
     voiceInstructionLoader.requestInstruction(instruction, textType, new Callback<ResponseBody>() {
       @Override
       public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
         if (response.isSuccessful()) {
+          Timber.d("Issue3216 request instruction=%s successful", instruction);
           executeInstructionTask(response.body());
         } else {
           try {

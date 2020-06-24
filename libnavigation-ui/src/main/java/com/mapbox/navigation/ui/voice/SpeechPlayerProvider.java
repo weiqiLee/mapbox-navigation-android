@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
 import com.mapbox.navigation.ui.internal.ConnectivityStatusProvider;
+import timber.log.Timber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,10 @@ public class SpeechPlayerProvider {
   }
 
   SpeechPlayer retrieveSpeechPlayer() {
-    if (voiceInstructionLoader.hasCache() || connectivityStatus.isConnectedFast()) {
+    boolean hasCache = voiceInstructionLoader.hasCache();
+    boolean isConnectedFast = connectivityStatus.isConnectedFast();
+    Timber.d("Issue3216 hasCache=%s, isConnectedFast=%s", hasCache, isConnectedFast);
+    if (hasCache || isConnectedFast) {
       return speechPlayers.get(FIRST_PLAYER);
     } else {
       return androidSpeechPlayer;

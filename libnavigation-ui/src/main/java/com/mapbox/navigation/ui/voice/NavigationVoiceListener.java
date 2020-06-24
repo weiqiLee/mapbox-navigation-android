@@ -10,7 +10,7 @@ class NavigationVoiceListener implements VoiceListener {
   private SpeechAudioFocusManager audioFocusManager;
 
   NavigationVoiceListener(SpeechPlayerProvider speechPlayerProvider,
-                          SpeechAudioFocusManager audioFocusManager) {
+      SpeechAudioFocusManager audioFocusManager) {
     this.speechPlayerProvider = speechPlayerProvider;
     this.audioFocusManager = audioFocusManager;
   }
@@ -27,7 +27,7 @@ class NavigationVoiceListener implements VoiceListener {
 
   @Override
   public void onError(String errorText, VoiceInstructions voiceInstructions) {
-    Timber.e(errorText);
+    Timber.d("Issue3216 errorText=%s, voiceInstructions=%s", errorText, voiceInstructions.announcement());
     speechPlayerProvider.retrieveAndroidSpeechPlayer().play(voiceInstructions);
   }
 }

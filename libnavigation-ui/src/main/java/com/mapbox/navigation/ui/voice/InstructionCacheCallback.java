@@ -21,12 +21,14 @@ class InstructionCacheCallback implements Callback<ResponseBody> {
   public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
     if (closeResponseBody(response)) {
       String url = call.request().url().toString();
+      Timber.d("Issue3216 addCachedUrl=%s", url);
       loader.addCachedUrl(url);
     }
   }
 
   @Override
   public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable throwable) {
+    Timber.d("Issue3216 onFailure cache instruction");
     Timber.e(throwable, "onFailure cache instruction");
   }
 

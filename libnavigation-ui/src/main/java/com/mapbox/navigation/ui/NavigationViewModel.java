@@ -53,6 +53,7 @@ import com.mapbox.navigation.ui.voice.VoiceInstructionLoader;
 import okhttp3.Cache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
+import timber.log.Timber;
 
 import java.io.File;
 import java.util.Arrays;
@@ -439,6 +440,7 @@ public class NavigationViewModel extends AndroidViewModel {
   private VoiceInstructionsObserver voiceInstructionsObserver = new VoiceInstructionsObserver() {
     @Override
     public void onNewVoiceInstructions(@NotNull VoiceInstructions voiceInstructions) {
+      Timber.d("Issue3216 newInstruction=%s", voiceInstructions.announcement());
       voiceInstructionCache.cache();
       voiceInstructionsToAnnounce++;
       voiceInstructionCache.update(voiceInstructionsToAnnounce);
