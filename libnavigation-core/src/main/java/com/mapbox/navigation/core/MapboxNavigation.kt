@@ -218,15 +218,15 @@ constructor(
     }
 
     /**
-     * Starts listening for location updates and enters an `Active Guidance` state if there's a primary route available
-     * or a `Free Drive` state otherwise.
+     * Starts listening for location updates and enters an `Active Guidance` state if
+     * there's a primary route available, otherwise falls back to `Free Drive`.
      *
      * @see [registerTripSessionStateObserver]
      * @see [registerRouteProgressObserver]
      */
     @RequiresPermission(anyOf = [ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION])
     fun startTripSession() {
-        tripSession.start()
+        tripSession.startTripSession()
         notificationChannelField?.let {
             monitorNotificationActionButton(it.get(null) as ReceiveChannel<NotificationAction>)
         }
@@ -238,7 +238,31 @@ constructor(
      * @see [registerTripSessionStateObserver]
      */
     fun stopTripSession() {
-        tripSession.stop()
+        tripSession.stopTripSession()
+    }
+
+    /**
+     * Start receiving map matched locations without a route.
+     */
+    @RequiresPermission(anyOf = [ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION])
+    fun startLocationUpdates() {
+        tripSession.startLocationUpdates()
+    }
+
+    /**
+     * Stop receiving map matched locations.
+     */
+    fun stopLocationUpdates() {
+        tripSession.stopLocationUpdates()
+    }
+
+    /**
+     * Refresh the location request used for [startActiveGuidance] or [startFreeDrive]
+     *
+     * @param locationEngineRequest the new location engine request
+     */
+    fun refreshLocationRequest(locationEngineRequest: LocationEngineRequest) {
+        tripSession.refresh(locationEngineRequest)
     }
 
     /**
@@ -310,7 +334,8 @@ constructor(
         MapboxNavigationTelemetry.unregisterListeners(this@MapboxNavigation)
         directionsSession.shutdown()
         directionsSession.unregisterAllRoutesObservers()
-        tripSession.stop()
+        tripSession.stopTripSession()
+        tripSession.stopLocationUpdates()
         tripSession.unregisterAllLocationObservers()
         tripSession.unregisterAllRouteProgressObservers()
         tripSession.unregisterAllOffRouteObservers()
@@ -594,7 +619,7 @@ constructor(
     private fun monitorNotificationActionButton(channel: ReceiveChannel<NotificationAction>) {
         mainJobController.scope.monitorChannelWithException(channel, { notificationAction ->
             when (notificationAction) {
-                NotificationAction.END_NAVIGATION -> tripSession.stop()
+                NotificationAction.END_NAVIGATION -> tripSession.stopTripSession()
             }
         })
     }

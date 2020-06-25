@@ -21,8 +21,11 @@ internal interface TripSession {
     fun getRouteProgress(): RouteProgress?
     fun getState(): TripSessionState
 
-    fun start()
-    fun stop()
+    fun startTripSession()
+    fun stopTripSession()
+    fun startLocationUpdates()
+    fun stopLocationUpdates()
+    fun refresh(locationEngineRequest: LocationEngineRequest)
 
     fun registerLocationObserver(locationObserver: LocationObserver)
     fun unregisterLocationObserver(locationObserver: LocationObserver)
