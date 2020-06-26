@@ -53,8 +53,10 @@ internal class RouteRefreshController(
 
     private fun supportsRefresh(route: DirectionsRoute?): Boolean {
         val isTrafficProfile = route?.routeOptions()
-            ?.profile()?.equals(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC)
-        return isTrafficProfile == true
+            ?.profile()?.equals(DirectionsCriteria.PROFILE_DRIVING_TRAFFIC) ?: false
+        val isRouteOverviewFull = route?.routeOptions()
+            ?.overview()?.equals(DirectionsCriteria.OVERVIEW_FULL) ?: false
+        return isTrafficProfile && isRouteOverviewFull
     }
 
     private val routeRefreshCallback = object : RouteRefreshCallback {
